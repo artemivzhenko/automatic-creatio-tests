@@ -1,0 +1,137 @@
+using System.Text.Json;
+using CreatioAutoTests.Configuration;
+using Microsoft.Extensions.Logging;
+
+namespace CreatioAutoTests.Analysis;
+
+/// <summary>What happened when an analysis was written to disk.</summary>
+public sealed record PageConfigWriteResult(
+    string FilePath,
+    int Written,
+    IReadOnlyList<ElementDefinition> NoLongerOnPage,
+    bool KeptMissing,
+    IReadOnlyList<ElementDefinition> Pinned);
+
+/// <summary>
+/// Writes an analysis into the page's own configuration file.
+///
+/// One file per page is what keeps the configuration readable, and it means analysing a page can
+/// never disturb another one.
+/// </summary>
+public sealed class PageConfigWriter
+{
+    private static readonly JsonSerializerOptions WriteOptions = new()
+    {
+        WriteIndented = true,
+        // Page files are hand-edited, so they match the camelCase of every other config file.
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+    };
+
+    private readonly ILogger<PageConfigWriter> _logger;
+
+    public PageConfigWriter(ILogger<PageConfigWriter> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public PageConfigWriteResult Write(
+        PageAnalysis analysis,
+        string pagesDirectory,
+        bool keepMissing = false,
+        string pageType = "FreedomUI")
+    {
+        ArgumentNullException.ThrowIfNull(analysis);
+
+        Directory.CreateDirectory(pagesDirectory);
+        var path = Path.Combine(pagesDirectory, analysis.PageName + ".json");
+
+        var existing = ReadExisting(path);
+        var found = analysis.Elements.Select(e => e.Code).ToHashSet(StringComparer.Ordinal);
+
+        // An entry that is configured but no longer rendered is either a page change worth knowing
+        // about, or a deliberate expectation that something must not appear.
+        var missing = existing
+            .Where(e => !found.Contains(e.Code))
+            .ToArray();
+
+        // An entry a person pinned survives untouched: analysis cannot know what it knows.
+        var pinned = existing.Where(e => e.Pinned).ToDictionary(e => e.Code, StringComparer.Ordinal);
+
+        var elements = analysis.Elements
+            .Select(e => pinned.TryGetValue(e.Code, out var kept) ? kept : ToDefinition(e))
+            .ToList();
+
+        if (keepMissing)
+        {
+            elements.AddRange(missing);
+        }
+
+        elements = elements
+            .OrderBy(e => e.Type, StringComparer.Ordinal)
+            .ThenBy(e => e.Code, StringComparer.Ordinal)
+            .ToList();
+
+        var document = new PageDefinition
+        {
+            Name = analysis.PageName,
+            Url = analysis.Url,
+            Type = pageType,
+            Elements = elements,
+        };
+
+        File.WriteAllText(path, JsonSerializer.Serialize(document, WriteOptions) + System.Environment.NewLine);
+        _logger.LogInformation("Wrote {Count} element(s) to {Path}.", elements.Count, path);
+
+        return new PageConfigWriteResult(
+            path,
+            elements.Count,
+            missing,
+            keepMissing,
+            pinned.Values.Where(p => found.Contains(p.Code)).ToArray());
+    }
+
+    private static ElementDefinition ToDefinition(DiscoveredElement element)
+    {
+        var definition = new ElementDefinition
+        {
+            Code = element.Code,
+            Label = element.Label,
+            Type = element.Type,
+        };
+
+        if (element.Stages is { Count: > 0 })
+        {
+            definition.Extra = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["values"] = JsonSerializer.SerializeToElement(element.Stages),
+            };
+        }
+
+        return definition;
+    }
+
+    private List<ElementDefinition> ReadExisting(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return new List<ElementDefinition>();
+        }
+
+        try
+        {
+            var page = JsonSerializer.Deserialize<PageDefinition>(
+                File.ReadAllText(path),
+                ConfigurationLoader.SerializerOptions);
+
+            return page?.Elements ?? new List<ElementDefinition>();
+        }
+        catch (JsonException ex)
+        {
+            // A broken file must not stop the analysis; it is about to be replaced anyway.
+            _logger.LogWarning(ex, "Existing page file {Path} could not be read; it will be replaced.", path);
+            return new List<ElementDefinition>();
+        }
+    }
+}

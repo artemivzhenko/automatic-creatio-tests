@@ -1,0 +1,172 @@
+{
+  "name": "LeadForm",
+  "url": "/0/Shell/#Card/Leads_FormPage",
+  "type": "FreedomUI",
+  "elements": [
+    {
+      "code": "BackButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CloseButton",
+      "label": "Close",
+      "type": "Button"
+    },
+    {
+      "code": "CreateOrderButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ExplainProbabilityScoreButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "SetRecordRightsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "SimilarLeadRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "SimilarLeadSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ProgressBar",
+      "label": "",
+      "type": "CasesBar",
+      "values": [
+        "Marketing qualified lead",
+        "Sales qualified lead",
+        "Converted"
+      ]
+    },
+    {
+      "code": "CreatedOn",
+      "label": "Created on",
+      "type": "DateTime"
+    },
+    {
+      "code": "Web",
+      "label": "Web",
+      "type": "Link"
+    },
+    {
+      "code": "AnnualRevenue",
+      "label": "Annual revenue",
+      "type": "Lookup"
+    },
+    {
+      "code": "ContactChannel",
+      "label": "Channel",
+      "type": "Lookup"
+    },
+    {
+      "code": "ContactRegisterMethod",
+      "label": "Registration method",
+      "type": "Lookup"
+    },
+    {
+      "code": "ContactSource",
+      "label": "Source",
+      "type": "Lookup"
+    },
+    {
+      "code": "EmployeesNumber",
+      "label": "No. of employees",
+      "type": "Lookup"
+    },
+    {
+      "code": "Group",
+      "label": "Assignees group",
+      "type": "Lookup"
+    },
+    {
+      "code": "Industry",
+      "label": "Industry",
+      "type": "Lookup"
+    },
+    {
+      "code": "LeadType",
+      "label": "Customer need",
+      "type": "Lookup"
+    },
+    {
+      "code": "LeadTypeDetails",
+      "label": "Lead type",
+      "type": "Lookup"
+    },
+    {
+      "code": "Owner",
+      "label": "Owner",
+      "type": "Lookup"
+    },
+    {
+      "code": "QualifiedAccount",
+      "label": "Account",
+      "type": "Lookup"
+    },
+    {
+      "code": "QualifiedContact",
+      "label": "Contact",
+      "type": "Lookup"
+    },
+    {
+      "code": "SalesChannel",
+      "label": "Sales channel",
+      "type": "Lookup"
+    },
+    {
+      "code": "Status",
+      "label": "Status",
+      "type": "Lookup"
+    },
+    {
+      "code": "Type",
+      "label": "Type",
+      "type": "Lookup"
+    },
+    {
+      "code": "HistoryTab",
+      "label": "History",
+      "type": "Tab"
+    },
+    {
+      "code": "OverviewTab",
+      "label": "Overview",
+      "type": "Tab"
+    },
+    {
+      "code": "ProcessingTab",
+      "label": "Processing",
+      "type": "Tab"
+    },
+    {
+      "code": "SalesTab",
+      "label": "Sales",
+      "type": "Tab"
+    },
+    {
+      "code": "Commentary",
+      "label": "Comments",
+      "type": "Text"
+    },
+    {
+      "code": "JobTitle",
+      "label": "Full job title",
+      "type": "Text"
+    },
+    {
+      "code": "LeadName",
+      "label": "Name",
+      "type": "Text"
+    }
+  ]
+}

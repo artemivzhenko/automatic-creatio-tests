@@ -1,0 +1,7 @@
+# A discovery case, not a test: it describes a page and writes Configuration/pages/LeadForm.json.
+#
+# Analysis and testing are separate scripts on purpose. A script is validated in full before any of
+# it runs, so fields this discovers become addressable in the next run, not on the line below.
+
+use Supervisor
+analyse "/0/Shell/#Card/Leads_FormPage" LeadForm

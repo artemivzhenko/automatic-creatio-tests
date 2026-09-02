@@ -1,0 +1,117 @@
+# Every value type the framework supports, against the UsrTest page.
+#
+# The page is never saved: the case writes into the form and closes it, so the record is left alone.
+# Tabs are switched explicitly because Creatio remembers which tab a page was last closed on, and
+# only the open tab is in the DOM.
+
+use Supervisor
+open UsrTestForm for 71d27c81-3d6b-41d9-9a39-c408c96173b6
+
+# ============ General information ============
+click GeneralInfoTab
+
+# ---------- Text ----------
+set Input_lkwigkv "text roundtrip"
+check-value Input_lkwigkv eq "text roundtrip"
+check-value Input_lkwigkv contains "roundtrip"
+check-value Input_lkwigkv startswith "text"
+check-value Input_lkwigkv endswith "roundtrip"
+clear Input_lkwigkv
+check-value Input_lkwigkv eq ""
+
+# ---------- RichText ----------
+set RichTextEditor_xnaolfg "rich text roundtrip"
+check-value RichTextEditor_xnaolfg contains "rich text roundtrip"
+
+# ---------- Email ----------
+set Input_9hckvrf "qa@example.com"
+check-value Input_9hckvrf eq "qa@example.com"
+set EmailInput_klsvjuk "second@example.com"
+check-value EmailInput_klsvjuk eq "second@example.com"
+
+# ---------- Phone ----------
+set Input_71se6kv "+380501112233"
+check-value Input_71se6kv eq "+380501112233"
+
+# ---------- Link ----------
+set WebInput_ikfkj4q "https://example.com/path?q=1"
+check-value WebInput_ikfkj4q eq "https://example.com/path?q=1"
+set WebInput_uam3xyi "https://example.com/second"
+check-value WebInput_uam3xyi eq "https://example.com/second"
+
+# ---------- Boolean ----------
+set Checkbox_5e8hmzp "true"
+check-value Checkbox_5e8hmzp eq "true"
+set Checkbox_5e8hmzp "false"
+check-value Checkbox_5e8hmzp eq "false"
+
+# ---------- Lookup ----------
+clear ComboBox_qzxxx5d
+check-value ComboBox_qzxxx5d eq ""
+
+# ---------- copying one field into another ----------
+set Input_s7d8yhu "copied value"
+set UsrName Input_s7d8yhu
+check-value UsrName eq "copied value"
+
+# ---------- read-only controls stay read-only ----------
+check Input_gfu1cih is readonly
+check Checkbox_btqjr3l is readonly
+check RichTextEditor_cmum0ek is readonly
+check WebInput_pd89phi is readonly
+check PhoneInput_stypcxk is readonly
+check ComboBox_hvtl4mk is readonly
+
+# ---------- required flags come from the page, not the config ----------
+check Input_s7d8yhu is required
+check Input_lkwigkv is not required
+check RichTextEditor_xnaolfg is required
+
+# ============ numbers ============
+click TabContainer_f7m50h9
+
+set NumberInput_gyp6371 "123"
+check-value NumberInput_gyp6371 eq "123"
+check-value NumberInput_gyp6371 gt "100"
+check-value NumberInput_gyp6371 ge "123"
+check-value NumberInput_gyp6371 lt "200"
+check-value NumberInput_gyp6371 le "123"
+check-value NumberInput_gyp6371 ne "0"
+
+set NumberInput_b46wkz1 "7"
+check-value NumberInput_b46wkz1 eq "7"
+
+set NumberInput_eh33mgn "45.75"
+check-value NumberInput_eh33mgn eq "45.75"
+check-value NumberInput_eh33mgn gt "45"
+
+check NumberInput_llhohxl is readonly
+
+# ============ datetimes ============
+click TabContainer_qtw0r0n
+
+# Date and time together: both halves round-trip.
+set DateTimePicker_unl0hhd "2025-11-30T07:35:00"
+check-value DateTimePicker_unl0hhd eq "2025-11-30T07:35:00"
+check-value DateTimePicker_unl0hhd gt "2020-01-01T00:00:00"
+check-value DateTimePicker_unl0hhd lt "2030-01-01T00:00:00"
+
+# Date only: the control stores no time, so the time is normalised away on the way back.
+set DateTimePicker_0iwfjnv "2025-11-30T15:30:00"
+check-value DateTimePicker_0iwfjnv eq "2025-11-30T00:00:00"
+check-value DateTimePicker_0iwfjnv gt "2025-01-01T00:00:00"
+
+# Time only: the control stores no date, so the date comes back as DateTime.MinValue's.
+set DateTimePicker_p027lhn "2000-01-01T07:36:00"
+check-value DateTimePicker_p027lhn eq "0001-01-01T07:36:00"
+
+set DateTimePicker_lxw1cge "0001-01-01T20:45:00"
+check-value DateTimePicker_lxw1cge eq "0001-01-01T20:45:00"
+check DateTimePicker_lxw1cge is required
+
+check DateTimePicker_7oux2pm is readonly
+check DateTimePicker_8oyqn4q is readonly
+check DateTimePicker_q04aqpj is readonly
+
+wait 1 second
+end

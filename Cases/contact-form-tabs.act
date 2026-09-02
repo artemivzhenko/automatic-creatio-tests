@@ -1,0 +1,30 @@
+# Tab support: 'check ... exists', 'check ... not exists' and 'click' against a live Contacts form.
+# Neither command was changed to gain tab support; Tab simply implements IClickable and IExistable.
+
+use Supervisor
+open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4
+
+# Every tab the page is expected to show, asserted by code and by caption.
+check GeneralInfoTab exists
+check TimelineTab exists
+check SubscriptionsTab exists
+check SalesTab exists
+check MarketingTab exists
+check ServiceTab exists
+
+# A tab that is configured but must not appear on this page.
+check OrdersTab not exists
+
+# Switching between tabs.
+click TimelineTab
+check TimelineTab exists
+
+click SalesTab
+check SalesTab exists
+
+click GeneralInfoTab
+check GeneralInfoTab exists
+
+# Fields of the tab we came back to are reachable again.
+check Dear exists
+check JobTitle exists

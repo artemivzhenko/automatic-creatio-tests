@@ -1,0 +1,8 @@
+# Analysis script, not a test. It describes a page and writes Configuration/pages/ContactForm.json.
+#
+# These run before the test cases and only when analysis is asked for (--analyse, or RunAnalysis in
+# run.config.json). Once a page is described the configuration is committed and reused, so a normal
+# run -- and a pipeline -- skips this entirely.
+
+use Supervisor
+analyse "/0/Shell/#Card/Contacts_FormPage/edit/c4ed336c-3e9b-40fe-8b82-5632476472b4" ContactForm

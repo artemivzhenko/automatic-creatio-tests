@@ -1,0 +1,157 @@
+{
+  "name": "AccountForm",
+  "url": "/0/Shell/#Card/Accounts_FormPage",
+  "type": "FreedomUI",
+  "elements": [
+    {
+      "code": "AccountCommunicationOptionsAddButton",
+      "label": "Add communication option",
+      "type": "Button"
+    },
+    {
+      "code": "AddressAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AddressRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AddressSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BackButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BankingDetailsAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BankingDetailsRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BankingDetailsSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CloseButton",
+      "label": "Close",
+      "type": "Button"
+    },
+    {
+      "code": "ContactsAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ContactsRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ContactsSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "RelationshipButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "SetRecordRightsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "LeadConversionScore",
+      "label": "Lead conversion score",
+      "type": "Integer"
+    },
+    {
+      "code": "AccountCategory",
+      "label": "Category",
+      "type": "Lookup"
+    },
+    {
+      "code": "AnnualRevenue",
+      "label": "Annual revenue",
+      "type": "Lookup"
+    },
+    {
+      "code": "EmployeesNumber",
+      "label": "No. of employees",
+      "type": "Lookup"
+    },
+    {
+      "code": "Industry",
+      "label": "Industry",
+      "type": "Lookup"
+    },
+    {
+      "code": "Owner",
+      "label": "Owner",
+      "type": "Lookup"
+    },
+    {
+      "code": "Ownership",
+      "label": "Business entity",
+      "type": "Lookup"
+    },
+    {
+      "code": "PrimaryContact",
+      "label": "Primary contact",
+      "type": "Lookup"
+    },
+    {
+      "code": "Type",
+      "label": "Type",
+      "type": "Lookup"
+    },
+    {
+      "code": "GeneralInfoTab",
+      "label": "Account info",
+      "type": "Tab"
+    },
+    {
+      "code": "NewsAndInsightsTab",
+      "label": "News & Insights",
+      "type": "Tab"
+    },
+    {
+      "code": "SalesTab",
+      "label": "Sales",
+      "type": "Tab"
+    },
+    {
+      "code": "ServiceTab",
+      "label": "Service",
+      "type": "Tab"
+    },
+    {
+      "code": "TimelineTab",
+      "label": "Timeline",
+      "type": "Tab"
+    },
+    {
+      "code": "AlternativeName",
+      "label": "Also known as",
+      "type": "Text"
+    },
+    {
+      "code": "ContactJobTitle",
+      "label": "Full job title",
+      "type": "Text"
+    }
+  ]
+}

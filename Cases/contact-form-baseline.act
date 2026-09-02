@@ -1,0 +1,69 @@
+# Generated from a live ContactForm by ai_helpers/generate_config.py.
+# It asserts the page as it was at generation time; edit it into a real scenario.
+
+use Supervisor
+open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4
+
+check AddressAddButton exists
+check AddressRefreshButton exists
+check AddressSettingsButton exists
+check BackButton exists
+check CareerAddButton exists
+check CareerRefreshButton exists
+check CareerSettingsButton exists
+check CloseButton exists
+check ContactCommunicationOptionsAddButton exists
+check SetRecordRightsButton exists
+check LeadConversionScore exists
+check LeadConversionScore is not required
+check LeadConversionScore is readonly
+
+check AccountWeb exists
+check AccountWeb is not required
+check AccountWeb is readonly
+
+check Account exists
+check Account is not required
+check Account is not readonly
+
+check AccountCategory exists
+check AccountCategory is not required
+check AccountCategory is readonly
+
+check AccountIndustry exists
+check AccountIndustry is not required
+check AccountIndustry is readonly
+
+check Gender exists
+check Gender is not required
+check Gender is not readonly
+
+check Language exists
+check Language is not required
+check Language is not readonly
+
+check Owner exists
+check Owner is not required
+check Owner is not readonly
+
+check SalutationType exists
+check SalutationType is not required
+check SalutationType is not readonly
+
+check Type exists
+check Type is not required
+check Type is not readonly
+
+check GeneralInfoTab exists
+check MarketingTab exists
+check SalesTab exists
+check ServiceTab exists
+check SubscriptionsTab exists
+check TimelineTab exists
+check Dear exists
+check Dear is not required
+check Dear is not readonly
+
+check JobTitle exists
+check JobTitle is not required
+check JobTitle is not readonly

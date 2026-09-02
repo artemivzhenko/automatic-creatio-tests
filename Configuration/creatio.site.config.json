@@ -1,0 +1,5 @@
+{
+  "AuthPath": "/ServiceModel/AuthService.svc/Login",
+  "ODataBasePath": "/0/odata",
+  "ProcessStartPath": "/ServiceModel/ProcessEngineService.svc/ProcessEngineService/StartProcess"
+}

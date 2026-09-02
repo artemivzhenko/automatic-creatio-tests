@@ -1,0 +1,9 @@
+{
+  "headless": false,
+  "continueOnFailure": false,
+  "elementTimeoutMs": 15000,
+  "pageLoadTimeoutMs": 60000,
+  "reportsDirectory": "Reports",
+  "skipFilePrefix": "tmp",
+  "runAnalysis": false
+}

@@ -1,0 +1,12 @@
+# A read-only, empty date control: its exact type cannot be established by anyone, so a test asserts
+# what is actually knowable -- that the control is there, carries the configured caption, and is
+# read-only. 'check X exists' compares both the element-name and the caption.
+
+use Supervisor
+open UsrTestForm for 71d27c81-3d6b-41d9-9a39-c408c96173b6
+
+click TabContainer_qtw0r0n
+
+check DateTimePicker_q04aqpj exists
+check DateTimePicker_q04aqpj is readonly
+check DateTimePicker_q04aqpj is not required

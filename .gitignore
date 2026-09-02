@@ -1,0 +1,43 @@
+# Build output
+bin/
+obj/
+[Bb]uild/
+artifacts/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.userosscache
+*.sln.docstates
+
+# Logs and temp
+*.log
+*.tlog
+*.tmp
+*.bak
+*.old
+*.swp
+[Ll]og/
+[Ll]ogs/
+
+# Test artifacts
+Reports/
+TestResults/
+
+# Playwright
+.playwright/
+playwright-report/
+
+# Reference copy of the pre-refactoring framework
+source/*
+
+# Holds real credentials once ai_helpers/generate_config.py has filled it in
+Configuration/creatio.env.config.json
+
+# Local helper scratch
+ai_helpers/*
+backlog/*
+copilot/*

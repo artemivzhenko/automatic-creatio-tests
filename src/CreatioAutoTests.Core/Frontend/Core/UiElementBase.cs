@@ -1,0 +1,161 @@
+using CreatioAutoTests.Configuration;
+using System.Reflection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Playwright;
+
+namespace CreatioAutoTests.Frontend;
+
+/// <summary>
+/// Shared behaviour of every Freedom UI element: resolve the host tag by element-name,
+/// report presence and read the rendered caption.
+/// </summary>
+public abstract class UiElementBase : IUiElement, IExistable, ILabeled
+{
+    private ILocator? _root;
+
+    protected UiElementBase(ElementRuntimeContext context)
+    {
+        Context = context ?? throw new ArgumentNullException(nameof(context));
+    }
+
+    protected ElementRuntimeContext Context { get; }
+
+    protected IPage Page => Context.Page;
+
+    protected ElementDefinition Definition => Context.Definition;
+
+    protected ILogger Logger => Context.Logger;
+
+    protected int TimeoutMs => Context.Settings.ElementTimeoutMs;
+
+    public string Code => Definition.Code;
+
+    public string Label => Definition.Label;
+
+    /// <summary>
+    /// Freedom UI custom tag that hosts this element, taken from the type's [UiElement] attribute.
+    /// A base class shared by several types leaves it there; only a type with no attribute of its
+    /// own, which cannot be registered anyway, would need to override this.
+    /// </summary>
+    protected virtual string HostTag => HostTagOf(GetType());
+
+    private static readonly Dictionary<Type, string> HostTagCache = new();
+
+    internal static string HostTagOf(Type type)
+    {
+        lock (HostTagCache)
+        {
+            if (HostTagCache.TryGetValue(type, out var cached))
+            {
+                return cached;
+            }
+
+            var attribute = type.GetCustomAttribute<UiElementAttribute>();
+            var tag = attribute?.HostTag ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(tag))
+            {
+                throw new InvalidOperationException(
+                    type.FullName + " does not declare a HostTag on its [UiElement] attribute.");
+            }
+
+            HostTagCache[type] = tag;
+            return tag;
+        }
+    }
+
+    /// <summary>
+    /// Elements are addressed strictly by element-name. The caption is verified separately by
+    /// 'check X exists' so that renaming a caption in Creatio produces a readable failure
+    /// instead of "element not found".
+    /// </summary>
+    protected virtual string BuildSelector() => HostTag + "[element-name=\"" + Code + "\"]";
+
+    protected ILocator Root => _root ??= Page.Locator(BuildSelector()).First;
+
+    /// <summary>
+    /// Input rendered by Angular Material. Creatio 8.3 emits <c>mat-mdc-input-element</c>; older
+    /// builds emit <c>mat-input-element</c>. Matching both keeps one selector working across
+    /// versions, and getting this wrong is silent: the host resolves, the value never does.
+    /// </summary>
+    protected const string MaterialInputSelector =
+        "input.mat-mdc-input-element, input.mat-input-element";
+
+    /// <summary>Element that carries the value. Overridden per control type.</summary>
+    protected virtual ILocator ValueLocator => Root.Locator("input, textarea");
+
+    /// <summary>Element that carries the caption. Overridden per control type.</summary>
+    protected virtual ILocator LabelLocator => Root.Locator(".crt-input-label");
+
+    public Task<bool> ExistsAsync(CancellationToken cancellationToken = default) =>
+        ExistsAsync(TimeoutMs, cancellationToken);
+
+    public virtual async Task<bool> ExistsAsync(int timeoutMs, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await Root.WaitForAsync(new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = timeoutMs
+            }).ConfigureAwait(false);
+
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            Logger.LogDebug("Element {Code} ({Tag}) was not visible within {Timeout} ms.", Code, HostTag, timeoutMs);
+            return false;
+        }
+        catch (PlaywrightException ex)
+        {
+            Logger.LogDebug(ex, "Element {Code} ({Tag}) lookup failed.", Code, HostTag);
+            return false;
+        }
+    }
+
+    public virtual async Task<string?> GetActualLabelAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (await LabelLocator.CountAsync().ConfigureAwait(false) == 0)
+            {
+                return null;
+            }
+
+            var raw = await LabelLocator.First.InnerTextAsync().ConfigureAwait(false);
+            return NormalizeLabel(raw);
+        }
+        catch (PlaywrightException ex)
+        {
+            Logger.LogDebug(ex, "Reading label of {Code} failed.", Code);
+            return null;
+        }
+    }
+
+    /// <summary>Strips the required marker and trailing punctuation Creatio adds to captions.</summary>
+    public static string NormalizeLabel(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        return text.Trim().TrimEnd(' ', '*', ':').Trim();
+    }
+
+    /// <summary>Treats null, empty and "false" attribute values as not set.</summary>
+    protected static bool IsFlagSet(string? attributeValue)
+    {
+        return !string.IsNullOrEmpty(attributeValue)
+               && !string.Equals(attributeValue, "false", StringComparison.OrdinalIgnoreCase);
+    }
+
+    protected InvalidOperationException NotFound()
+    {
+        return new InvalidOperationException(
+            "Element '" + Code + "' (" + HostTag + ") was not found on page '" + Definition.Page + "'.");
+    }
+
+    public override string ToString() => GetType().Name + "(" + Code + ")";
+}

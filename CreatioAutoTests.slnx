@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CreatioAutoTests.Cli/CreatioAutoTests.Cli.csproj" />
+    <Project Path="src/CreatioAutoTests.Core/CreatioAutoTests.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CreatioAutoTests.Tests/CreatioAutoTests.Tests.csproj" />
+  </Folder>
+</Solution>

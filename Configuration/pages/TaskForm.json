@@ -1,0 +1,102 @@
+{
+  "name": "TaskForm",
+  "url": "/0/Shell/#Card/Tasks_FormPage",
+  "type": "FreedomUI",
+  "elements": [
+    {
+      "code": "RemindOwner",
+      "label": "Remind owner",
+      "type": "Boolean"
+    },
+    {
+      "code": "RemindReporter",
+      "label": "Remind reporter",
+      "type": "Boolean"
+    },
+    {
+      "code": "ShowInScheduler",
+      "label": "Show in calendar",
+      "type": "Boolean"
+    },
+    {
+      "code": "BackButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CloseButton",
+      "label": "Close",
+      "type": "Button"
+    },
+    {
+      "code": "SetRecordRightsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "End",
+      "label": "Due",
+      "type": "DateTime"
+    },
+    {
+      "code": "RemindOwnerOn",
+      "label": "Remind owner on",
+      "type": "DateTime"
+    },
+    {
+      "code": "Start",
+      "label": "Start",
+      "type": "DateTime"
+    },
+    {
+      "code": "Category",
+      "label": "Category",
+      "type": "Lookup"
+    },
+    {
+      "code": "Owner",
+      "label": "Owner",
+      "type": "Lookup"
+    },
+    {
+      "code": "Priority",
+      "label": "Priority",
+      "type": "Lookup"
+    },
+    {
+      "code": "Reporter",
+      "label": "Reporter",
+      "type": "Lookup"
+    },
+    {
+      "code": "Result",
+      "label": "Result",
+      "type": "Lookup"
+    },
+    {
+      "code": "Role",
+      "label": "Role",
+      "type": "Lookup"
+    },
+    {
+      "code": "Status",
+      "label": "Status",
+      "type": "Lookup"
+    },
+    {
+      "code": "Notes",
+      "label": "Notes",
+      "type": "RichText"
+    },
+    {
+      "code": "Location",
+      "label": "Location",
+      "type": "Text"
+    },
+    {
+      "code": "Title",
+      "label": "Subject",
+      "type": "Text"
+    }
+  ]
+}

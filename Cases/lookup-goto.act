@@ -1,0 +1,10 @@
+# 'goto' follows the record link a lookup renders. It navigates away, so it is the last thing a case
+# does: the page context it leaves behind belongs to another page.
+
+use Supervisor
+open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4
+
+check Account exists
+check-value Account ne ""
+
+goto Account

@@ -1,0 +1,199 @@
+{
+  "name": "OpportunityForm",
+  "url": "/0/Shell/#Card/Opportunities_FormPage",
+  "type": "FreedomUI",
+  "elements": [
+    {
+      "code": "ForecastCommit",
+      "label": "Commit to forecast",
+      "type": "Boolean"
+    },
+    {
+      "code": "IsPrimary",
+      "label": "New customer",
+      "type": "Boolean"
+    },
+    {
+      "code": "BackButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CloseButton",
+      "label": "Close",
+      "type": "Button"
+    },
+    {
+      "code": "CompetitorsRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CompetitorsSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ContactRolesRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ContactRolesSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CreateOrderButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OpportunityTeamRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OpportunityTeamSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "PrintButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "RunOppMgmtProcButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "SetRecordRightsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ProgressBar",
+      "label": "",
+      "type": "CasesBar",
+      "values": [
+        "Qualification",
+        "Presentation",
+        "Proposal",
+        "Contracting",
+        "Closed won"
+      ]
+    },
+    {
+      "code": "DueDate",
+      "label": "Expected close date",
+      "type": "Date"
+    },
+    {
+      "code": "CreatedOn",
+      "label": "Created on",
+      "type": "DateTime"
+    },
+    {
+      "code": "Amount",
+      "label": "Total contract value",
+      "type": "Decimal"
+    },
+    {
+      "code": "Web",
+      "label": "Web",
+      "type": "Link"
+    },
+    {
+      "code": "Account",
+      "label": "Account",
+      "type": "Lookup"
+    },
+    {
+      "code": "AnnualRevenue",
+      "label": "Annual revenue",
+      "type": "Lookup"
+    },
+    {
+      "code": "Contact",
+      "label": "Contact",
+      "type": "Lookup"
+    },
+    {
+      "code": "CustomerNeed",
+      "label": "Customer need",
+      "type": "Lookup"
+    },
+    {
+      "code": "DecisionMaker",
+      "label": "Decision maker",
+      "type": "Lookup"
+    },
+    {
+      "code": "EmployeesNumber",
+      "label": "No. of employees",
+      "type": "Lookup"
+    },
+    {
+      "code": "Group",
+      "label": "Assignees group",
+      "type": "Lookup"
+    },
+    {
+      "code": "Industry",
+      "label": "Industry",
+      "type": "Lookup"
+    },
+    {
+      "code": "OpportunityType",
+      "label": "Sales channel",
+      "type": "Lookup"
+    },
+    {
+      "code": "Owner",
+      "label": "Owner",
+      "type": "Lookup"
+    },
+    {
+      "code": "Type",
+      "label": "Type",
+      "type": "Lookup"
+    },
+    {
+      "code": "HistoryTab",
+      "label": "History",
+      "type": "Tab"
+    },
+    {
+      "code": "OpportunityInsightsTab",
+      "label": "Opportunity insights",
+      "type": "Tab"
+    },
+    {
+      "code": "OverviewTab",
+      "label": "Overview",
+      "type": "Tab"
+    },
+    {
+      "code": "ProcessingTab",
+      "label": "Processing",
+      "type": "Tab"
+    },
+    {
+      "code": "ProductsTab",
+      "label": "Products",
+      "type": "Tab"
+    },
+    {
+      "code": "Description",
+      "label": "Description",
+      "type": "Text"
+    },
+    {
+      "code": "Title",
+      "label": "Name",
+      "type": "Text"
+    }
+  ]
+}

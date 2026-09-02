@@ -1,0 +1,152 @@
+{
+  "name": "ContactForm",
+  "url": "/0/Shell/#Card/Contacts_FormPage",
+  "type": "FreedomUI",
+  "elements": [
+    {
+      "code": "AddressAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AddressRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AddressSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BackButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CareerAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CareerRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CareerSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CloseButton",
+      "label": "Close",
+      "type": "Button"
+    },
+    {
+      "code": "ContactCommunicationOptionsAddButton",
+      "label": "Add communication option",
+      "type": "Button"
+    },
+    {
+      "code": "SetRecordRightsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "LeadConversionScore",
+      "label": "Lead conversion score",
+      "type": "Integer"
+    },
+    {
+      "code": "AccountWeb",
+      "label": "Web",
+      "type": "Link"
+    },
+    {
+      "code": "Account",
+      "label": "Account",
+      "type": "Lookup"
+    },
+    {
+      "code": "AccountCategory",
+      "label": "Category",
+      "type": "Lookup"
+    },
+    {
+      "code": "AccountIndustry",
+      "label": "Industry",
+      "type": "Lookup"
+    },
+    {
+      "code": "Gender",
+      "label": "Gender",
+      "type": "Lookup"
+    },
+    {
+      "code": "Language",
+      "label": "Preferred language",
+      "type": "Lookup"
+    },
+    {
+      "code": "Owner",
+      "label": "Owner",
+      "type": "Lookup"
+    },
+    {
+      "code": "SalutationType",
+      "label": "Title",
+      "type": "Lookup"
+    },
+    {
+      "code": "Type",
+      "label": "Type",
+      "type": "Lookup"
+    },
+    {
+      "code": "GeneralInfoTab",
+      "label": "Contact info",
+      "type": "Tab"
+    },
+    {
+      "code": "MarketingTab",
+      "label": "Marketing",
+      "type": "Tab"
+    },
+    {
+      "code": "OrdersTab",
+      "label": "Orders",
+      "type": "Tab"
+    },
+    {
+      "code": "SalesTab",
+      "label": "Sales",
+      "type": "Tab"
+    },
+    {
+      "code": "ServiceTab",
+      "label": "Service",
+      "type": "Tab"
+    },
+    {
+      "code": "SubscriptionsTab",
+      "label": "Subscriptions",
+      "type": "Tab"
+    },
+    {
+      "code": "TimelineTab",
+      "label": "Timeline",
+      "type": "Tab"
+    },
+    {
+      "code": "Dear",
+      "label": "Recipient's name",
+      "type": "Text"
+    },
+    {
+      "code": "JobTitle",
+      "label": "Full job title",
+      "type": "Text"
+    }
+  ]
+}

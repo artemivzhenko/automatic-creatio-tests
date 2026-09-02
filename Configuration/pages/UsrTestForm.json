@@ -1,0 +1,217 @@
+{
+  "name": "UsrTestForm",
+  "url": "/0/Shell/#Page/UsrTest_FormPage",
+  "type": "FreedomUI",
+  "elements": [
+    {
+      "code": "Checkbox_5e8hmzp",
+      "label": "Checkbox 1",
+      "type": "Boolean",
+      "pinned": false
+    },
+    {
+      "code": "Checkbox_btqjr3l",
+      "label": "Checkbox 2",
+      "type": "Boolean",
+      "pinned": false
+    },
+    {
+      "code": "BackButton",
+      "label": "",
+      "type": "Button",
+      "pinned": false
+    },
+    {
+      "code": "CloseButton",
+      "label": "Close",
+      "type": "Button",
+      "pinned": false
+    },
+    {
+      "code": "SetRecordRightsButton",
+      "label": "",
+      "type": "Button",
+      "pinned": false
+    },
+    {
+      "code": "DateTimePicker_0iwfjnv",
+      "label": "Date only",
+      "type": "Date",
+      "pinned": false
+    },
+    {
+      "code": "DateTimePicker_7oux2pm",
+      "label": "Modified on",
+      "type": "DateTime",
+      "pinned": false
+    },
+    {
+      "code": "DateTimePicker_8oyqn4q",
+      "label": "Created on",
+      "type": "DateTime",
+      "pinned": false
+    },
+    {
+      "code": "DateTimePicker_q04aqpj",
+      "label": "Date/Time 1",
+      "type": "DateTime",
+      "pinned": false
+    },
+    {
+      "code": "DateTimePicker_unl0hhd",
+      "label": "Date/Time 2",
+      "type": "DateTime",
+      "pinned": false
+    },
+    {
+      "code": "NumberInput_eh33mgn",
+      "label": "Decimal 4",
+      "type": "Decimal",
+      "pinned": false
+    },
+    {
+      "code": "EmailInput_klsvjuk",
+      "label": "Email address 1",
+      "type": "Email",
+      "pinned": false
+    },
+    {
+      "code": "Input_9hckvrf",
+      "label": "Mail",
+      "type": "Email",
+      "pinned": false
+    },
+    {
+      "code": "NumberInput_b46wkz1",
+      "label": "Number 3",
+      "type": "Integer",
+      "pinned": false
+    },
+    {
+      "code": "NumberInput_gyp6371",
+      "label": "Number 1",
+      "type": "Integer",
+      "pinned": false
+    },
+    {
+      "code": "NumberInput_llhohxl",
+      "label": "Number 2",
+      "type": "Integer",
+      "pinned": false
+    },
+    {
+      "code": "WebInput_ikfkj4q",
+      "label": "Web link 1",
+      "type": "Link",
+      "pinned": false
+    },
+    {
+      "code": "WebInput_pd89phi",
+      "label": "Web link 2",
+      "type": "Link",
+      "pinned": false
+    },
+    {
+      "code": "WebInput_uam3xyi",
+      "label": "Web link 3",
+      "type": "Link",
+      "pinned": false
+    },
+    {
+      "code": "ComboBox_dtmdaiz",
+      "label": "Modified by",
+      "type": "Lookup",
+      "pinned": false
+    },
+    {
+      "code": "ComboBox_hvtl4mk",
+      "label": "Created by",
+      "type": "Lookup",
+      "pinned": false
+    },
+    {
+      "code": "ComboBox_qzxxx5d",
+      "label": "Dropdown 1",
+      "type": "Lookup",
+      "pinned": false
+    },
+    {
+      "code": "Input_71se6kv",
+      "label": "Phone",
+      "type": "Phone",
+      "pinned": false
+    },
+    {
+      "code": "PhoneInput_stypcxk",
+      "label": "Phone number 1",
+      "type": "Phone",
+      "pinned": false
+    },
+    {
+      "code": "RichTextEditor_cmum0ek",
+      "label": "Rich text 2",
+      "type": "RichText",
+      "pinned": false
+    },
+    {
+      "code": "RichTextEditor_xnaolfg",
+      "label": "Rich text 1",
+      "type": "RichText",
+      "pinned": false
+    },
+    {
+      "code": "GeneralInfoTab",
+      "label": "General information",
+      "type": "Tab",
+      "pinned": false
+    },
+    {
+      "code": "TabContainer_f7m50h9",
+      "label": "numbers",
+      "type": "Tab",
+      "pinned": false
+    },
+    {
+      "code": "TabContainer_qtw0r0n",
+      "label": "datetimes",
+      "type": "Tab",
+      "pinned": false
+    },
+    {
+      "code": "Input_gfu1cih",
+      "label": "Text 2",
+      "type": "Text",
+      "pinned": false
+    },
+    {
+      "code": "Input_lkwigkv",
+      "label": "Text 1",
+      "type": "Text",
+      "pinned": false
+    },
+    {
+      "code": "Input_s7d8yhu",
+      "label": "Text 3",
+      "type": "Text",
+      "pinned": false
+    },
+    {
+      "code": "UsrName",
+      "label": "Name",
+      "type": "Text",
+      "pinned": false
+    },
+    {
+      "code": "DateTimePicker_lxw1cge",
+      "label": "Time 2",
+      "type": "Time",
+      "pinned": false
+    },
+    {
+      "code": "DateTimePicker_p027lhn",
+      "label": "Time only",
+      "type": "Time",
+      "pinned": false
+    }
+  ]
+}
