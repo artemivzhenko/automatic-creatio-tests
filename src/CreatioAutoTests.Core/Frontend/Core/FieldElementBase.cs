@@ -9,19 +9,24 @@ namespace CreatioAutoTests.Frontend;
 public abstract class FieldElementBase
     : UiElementBase, IStateAware, IValueElement, IClearable
 {
+    /// <summary>Initializes the common field behavior for one configured control.</summary>
     protected FieldElementBase(ElementRuntimeContext context) : base(context)
     {
     }
 
+    /// <summary>Reads the field in the string representation shared by DSL commands.</summary>
     public abstract Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Writes the string representation supplied by the DSL.</summary>
     public abstract Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default);
 
+    /// <summary>Clears a field by delegating to its own string writer with an empty value.</summary>
     public virtual Task ClearAsync(CancellationToken cancellationToken = default)
     {
         return SetValueFromStringAsync(string.Empty, cancellationToken);
     }
 
+    /// <summary>Detects the required markers Freedom UI may place on an input or its label.</summary>
     public virtual async Task<bool> IsRequiredAsync(CancellationToken cancellationToken = default)
     {
         var input = ValueLocator;
@@ -35,6 +40,7 @@ public abstract class FieldElementBase
                || labelClass.Contains("crt-input-required", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>Detects the different readonly markers emitted by Freedom UI controls.</summary>
     public virtual async Task<bool> IsReadOnlyAsync(CancellationToken cancellationToken = default)
     {
         var input = ValueLocator;

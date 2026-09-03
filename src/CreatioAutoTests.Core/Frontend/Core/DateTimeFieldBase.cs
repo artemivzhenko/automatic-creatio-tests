@@ -10,13 +10,16 @@ namespace CreatioAutoTests.Frontend;
 /// </summary>
 public abstract class DateTimeFieldBase : FieldElementBase
 {
+    /// <summary>Initializes date-family behavior that converts between ISO and the rendered format.</summary>
     protected DateTimeFieldBase(ElementRuntimeContext context) : base(context)
     {
     }
 
 
+    /// <summary>Freedom UI host tag shared by date, time, and date-time picker controls.</summary>
     protected override string HostTag => "crt-datetimepicker";
 
+    /// <summary>Angular Material input that renders the picker value.</summary>
     protected override ILocator ValueLocator => Root.Locator(MaterialInputSelector);
 
     /// <summary>Format written into the control, for example MM/dd/yyyy.</summary>
@@ -28,6 +31,7 @@ public abstract class DateTimeFieldBase : FieldElementBase
     /// <summary>Drops the component this control does not store, so a round trip is stable.</summary>
     protected abstract DateTime Normalize(DateTime value);
 
+    /// <summary>Reads the rendered date-family value and returns its normalized ISO representation.</summary>
     public override async Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -41,6 +45,7 @@ public abstract class DateTimeFieldBase : FieldElementBase
         return parsed is null ? string.Empty : IsoDateTime.ToIso(parsed.Value);
     }
 
+    /// <summary>Writes an ISO value in the concrete control's UI format.</summary>
     public override async Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))

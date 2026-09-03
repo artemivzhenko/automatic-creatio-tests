@@ -7,6 +7,7 @@ namespace CreatioAutoTests.Frontend.Fields;
 [UiElement("Text", HostTag = "crt-input", ValueKind = ValueKind.Text)]
 public sealed class TextField : TextInputFieldBase
 {
+    /// <summary>Initializes the reference implementation for a plain single-line input.</summary>
     public TextField(ElementRuntimeContext context) : base(context)
     {
     }

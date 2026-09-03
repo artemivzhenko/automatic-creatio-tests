@@ -16,6 +16,7 @@ namespace CreatioAutoTests.Runner;
 /// </summary>
 public sealed class TestRunner
 {
+    /// <summary>File extension used to discover DSL scripts.</summary>
     public const string TestFileExtension = ".act";
 
     private readonly FrameworkConfiguration _configuration;
@@ -27,6 +28,7 @@ public sealed class TestRunner
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<TestRunner> _logger;
 
+    /// <summary>Initializes all services needed to validate and execute case and analysis scripts.</summary>
     public TestRunner(
         FrameworkConfiguration configuration,
         UiElementFactory elementFactory,

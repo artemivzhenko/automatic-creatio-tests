@@ -12,6 +12,7 @@ namespace CreatioAutoTests.Validation.Validators;
 /// </summary>
 public sealed class StateCheckValidator : ICommandValidator
 {
+    /// <summary>Validates check syntax and ensures state assertions target a state-aware element.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount < 2)

@@ -20,6 +20,7 @@ public sealed class CasesBar : UiElementBase, IValueElement
 
     private readonly CasesBarOptions _options;
 
+    /// <summary>Initializes the configured stage bar and its declared stage hierarchy.</summary>
     public CasesBar(ElementRuntimeContext context) : base(context)
     {
         _options = context.Definition.BindOptions<CasesBarOptions>();
@@ -29,8 +30,10 @@ public sealed class CasesBar : UiElementBase, IValueElement
     /// <summary>Stages declared in configuration, in the order they are expected on screen.</summary>
     public IReadOnlyList<string> ExpectedStages => _options.Values;
 
+    /// <summary>Stage-bar caption element used by the shared label assertion.</summary>
     protected override ILocator LabelLocator => Root.Locator(".crt-input-label");
 
+    /// <summary>Returns the currently selected stage for <c>check-value</c> without command special cases.</summary>
     public async Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -67,6 +70,10 @@ public sealed class CasesBar : UiElementBase, IValueElement
         return result;
     }
 
+    /// <summary>
+    /// Selects a top-level stage or menu-backed sub-stage for <c>set</c>, then dismisses the CDK
+    /// backdrop that Creatio can leave behind and which would otherwise swallow later clicks.
+    /// </summary>
     public async Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(value))

@@ -8,6 +8,7 @@ namespace CreatioAutoTests.Validation;
 /// </summary>
 public sealed class ValidationContext
 {
+    /// <summary>Initializes all configuration data the static validation pass may consult.</summary>
     public ValidationContext(
         ElementCatalog catalog,
         IReadOnlyDictionary<string, string> staticValues,
@@ -20,12 +21,16 @@ public sealed class ValidationContext
         KnownUsers = new HashSet<string>(knownUsers, StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>Page and element definitions used to resolve DSL codes without a browser.</summary>
     public ElementCatalog Catalog { get; }
 
+    /// <summary>Named literal values available to assignment and comparison commands.</summary>
     public IReadOnlyDictionary<string, string> StaticValues { get; }
 
+    /// <summary>Configured creation workflows checked by the <c>create</c> validator.</summary>
     public IReadOnlyDictionary<string, ObjectDefinition> Objects { get; }
 
+    /// <summary>Configured user names accepted by the <c>use</c> command.</summary>
     public IReadOnlySet<string> KnownUsers { get; }
 
     /// <summary>Page the script has open at the command being validated. Null before the first 'open'.</summary>

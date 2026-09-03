@@ -10,6 +10,7 @@ namespace CreatioAutoTests.Validation.Validators;
 /// </summary>
 public sealed class PageValidator : ICommandValidator
 {
+    /// <summary>Validates an <c>open</c> command and advances the virtual page for later code resolution.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount is not (1 or 3))

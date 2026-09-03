@@ -17,11 +17,13 @@ public sealed class Tab : UiElementBase, IClickable
     private const string LabelSelector = ".tab-label";
     private const int ContentSettleMs = 1000;
 
+    /// <summary>Initializes a clickable tab header for its configured page control.</summary>
     public Tab(ElementRuntimeContext context) : base(context)
     {
     }
 
 
+    /// <summary>Fallback caption element when the header title attribute is unavailable.</summary>
     protected override ILocator LabelLocator => Root.Locator(LabelSelector);
 
     private ILocator Header => Root.Locator(HeaderSelector);
@@ -52,6 +54,7 @@ public sealed class Tab : UiElementBase, IClickable
         return await base.GetActualLabelAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>Activates the tab for <c>click</c> and waits for its newly visible panel content.</summary>
     public async Task ClickAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))

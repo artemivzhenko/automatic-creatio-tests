@@ -15,6 +15,7 @@ public sealed class BrowserSessionPool : IAsyncDisposable
     private readonly ILogger<BrowserSessionPool> _logger;
     private readonly Dictionary<string, IBrowserContext> _contexts;
 
+    /// <summary>Initializes shared per-user browser-context storage for a run.</summary>
     public BrowserSessionPool(
         IBrowser browser,
         CreatioAuthenticator authenticator,
@@ -60,6 +61,7 @@ public sealed class BrowserSessionPool : IAsyncDisposable
         return context;
     }
 
+    /// <summary>Closes every shared user context after all test-case sessions have completed.</summary>
     public async ValueTask DisposeAsync()
     {
         foreach (var context in _contexts.Values)

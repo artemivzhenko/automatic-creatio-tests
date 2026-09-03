@@ -25,6 +25,7 @@ public sealed class AnalyseCommand : ICommand
     private readonly PageConfigWriter _writer;
     private readonly ConfigurationPaths _paths;
 
+    /// <summary>Initializes page analysis and configuration-writing services for the command.</summary>
     public AnalyseCommand(PageAnalyzer analyzer, PageConfigWriter writer, ConfigurationPaths paths)
     {
         _analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
@@ -32,6 +33,7 @@ public sealed class AnalyseCommand : ICommand
         _paths = paths ?? throw new ArgumentNullException(nameof(paths));
     }
 
+    /// <summary>Analyzes the open or specified page and writes its elements into the page configuration directory.</summary>
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
         var session = context.Session;

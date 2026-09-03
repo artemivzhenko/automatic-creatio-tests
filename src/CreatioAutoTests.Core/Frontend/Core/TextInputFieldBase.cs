@@ -8,10 +8,12 @@ namespace CreatioAutoTests.Frontend;
 /// </summary>
 public abstract class TextInputFieldBase : FieldElementBase
 {
+    /// <summary>Initializes plain-input behavior for a concrete text-like control.</summary>
     protected TextInputFieldBase(ElementRuntimeContext context) : base(context)
     {
     }
 
+    /// <summary>Reads the input value without applying a field-specific conversion.</summary>
     public override async Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -22,6 +24,7 @@ public abstract class TextInputFieldBase : FieldElementBase
         return await ValueLocator.InputValueAsync().ConfigureAwait(false);
     }
 
+    /// <summary>Writes visible inputs normally and hidden Creatio inputs through the DOM event path.</summary>
     public override async Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))

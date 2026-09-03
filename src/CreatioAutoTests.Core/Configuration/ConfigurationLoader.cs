@@ -8,6 +8,7 @@ namespace CreatioAutoTests.Configuration;
 /// </summary>
 public sealed class ConfigurationLoader
 {
+    /// <summary>Shared permissive JSON reader settings for comments, trailing commas, and case-insensitive keys.</summary>
     public static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -17,6 +18,7 @@ public sealed class ConfigurationLoader
 
     private readonly string _rootDirectory;
 
+    /// <summary>Initializes configuration loading relative to a required root directory.</summary>
     public ConfigurationLoader(string rootDirectory)
     {
         if (string.IsNullOrWhiteSpace(rootDirectory))
@@ -27,6 +29,7 @@ public sealed class ConfigurationLoader
         _rootDirectory = rootDirectory;
     }
 
+    /// <summary>Combines a configuration-relative path with the configured root directory.</summary>
     public string Resolve(string relativePath) => Path.Combine(_rootDirectory, relativePath);
 
     /// <summary>Reads a required file and fails with the path when it is missing or malformed.</summary>

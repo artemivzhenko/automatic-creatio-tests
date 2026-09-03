@@ -8,6 +8,7 @@ namespace CreatioAutoTests.Execution;
 /// </summary>
 public sealed class ScriptParser
 {
+    /// <summary>First character of a whole-line DSL comment.</summary>
     public const char CommentPrefix = '#';
 
     /// <summary>Parses every meaningful line of a script, preserving original line numbers.</summary>
@@ -43,6 +44,7 @@ public sealed class ScriptParser
         return result;
     }
 
+    /// <summary>Reads and tokenizes every meaningful line in a script file.</summary>
     public IReadOnlyList<ParsedCommand> ParseFile(string path) => Parse(File.ReadAllLines(path));
 
     /// <summary>

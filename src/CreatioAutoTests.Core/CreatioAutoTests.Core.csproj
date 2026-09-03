@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>CreatioAutoTests</RootNamespace>
     <AssemblyName>CreatioAutoTests.Core</AssemblyName>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

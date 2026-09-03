@@ -9,7 +9,7 @@ Write one command per line. Blank lines and lines beginning with `#` are ignored
 | Command | Syntax | Target | Example |
 | --- | --- | --- | --- |
 | use | `use <user>` | none | `use testUser` |
-| open | `open <page> [for <recordId>]` | none | `open TestPage for 0c48c818-08f0-4f70-9b58-be512227f3bf` |
+| open | `open <page> [for <recordId>]` | none | `open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4` |
 | check | `check <code> [not] exists` \| `check <code> is [not] required\|readonly` | `IExistable`; the state forms also need `IStateAware` | `check Input_Text is required` |
 | check-value | `check-value <code> eq|ne|gt|ge|lt|le|contains|startswith|endswith <value>` | `IValueElement` | `check-value Input_Text eq "Sample Name 123"` |
 | set | `set <code> "value" | set <code> <sourceCodeOrStaticValue>` | `IValueElement` | `set Input_Text DefInput` |
@@ -19,9 +19,10 @@ Write one command per line. Blank lines and lines beginning with `#` are ignored
 | wait | `wait <number> second|minute` | none | `wait 2 second` |
 | create | `create <object>` | none | `create TestEntity` |
 | end | `end` | none | `end` |
+| analyse | `analyse ["<page path>"] [<pageName>]` | none | `analyse "/0/Shell/#Card/Contacts_FormPage/edit/<id>" ContactForm` |
 | analyse | `analyse ["<page path>"] [<pageName>]` | none | `analyse "/0/Shell/#Card/Contacts_FormPage/edit/{id}" ContactForm` |
 
-`check <code> exists` also verifies that the rendered caption matches the `label` in `elements.config.json`; required and readonly are never asserted implicitly, they are separate lines.
+`check <code> exists` also verifies that the rendered caption matches the `label` in the page file under `Configuration/pages`; required and readonly are never asserted implicitly, they are separate lines.
 
 `analyse` describes a page and writes `Configuration/pages/<pageName>.json`: every field, button,
 tab and stage bar it can address, plus a list of controls that have no element type yet. Given an
@@ -33,23 +34,26 @@ before any of it runs, so elements `analyse` discovers are not addressable on th
 but they are addressable by the test cases, because the run has two phases. See "Analysis phase"
 below. The same work is available without a script as `creatio-tests analyse "<path>"`.
 
-`create` follows its configured section, New button, form, fields, and Save button. `end` logs readable values from the current page without changing the outcome.
+`create` follows its configured section, New button, form, fields, and Save button. `end` logs readable values from the current page without changing the outcome. `analyse` describes a live page and writes its page configuration; it can also be run as the CLI subcommand `analyse`.
 
 ## Element Types
 
 | `type` | Creatio control | Value kind | Extra members |
 | --- | --- | --- | --- |
-| Button | `crt-button` | None | `isSave`, `doubleClick`, `settleMs`, `disappearTimeoutMs` |
-| CasesBar | `crt-entity-stage-progress-bar` | Stage | `values`, `subvalues` |
-| Text | `crt-input` | Text | none |
-| RichText | `crt-rich-text-editor` | Text | none |
-| Email | `crt-email-input` | Text | none |
-| Phone | `crt-phone-input` | Text | none |
-| Link | `crt-web-input` | Text | none |
-| Integer, Decimal | `crt-number-input` | Number | none |
-| Date, Time, DateTime | `crt-datetimepicker` | DateTime | none |
-| Boolean | `crt-checkbox` | Boolean | none |
-| Lookup | `crt-combobox` | Lookup | none |
+| Button | `crt-button` | None | `isSave`, `doubleClick`, `settleMs`, `disappearTimeoutMs`; `pinned` |
+| CasesBar | `crt-entity-stage-progress-bar` | Stage | `values`, `subvalues`; `pinned` |
+| Tab | `crt-tab-panel-header-item` | None | `pinned` |
+| Text | `crt-input` | Text | `pinned` |
+| RichText | `crt-rich-text-editor` | Text | `pinned` |
+| Email | `crt-email-input` | Text | `pinned` |
+| Phone | `crt-phone-input` | Text | `pinned` |
+| Link | `crt-web-input` | Text | `pinned` |
+| Integer, Decimal | `crt-number-input` | Number | `pinned` |
+| Date, Time, DateTime | `crt-datetimepicker` | DateTime | `pinned` |
+| Boolean | `crt-checkbox` | Boolean | `pinned` |
+| Lookup | `crt-combobox` | Lookup | `pinned` |
+
+`pinned: true` marks an entry as a human decision. The analyser leaves that entry untouched on later runs, including decisions that cannot be inferred from the DOM.
 
 ## Values
 
@@ -93,6 +97,23 @@ creatio-tests --analyse-only   # describe the pages and stop
 the run before the cases: configuration they were meant to write is missing, so any result the cases
 produced would be misleading.
 
+The analyser opens every tab by default. Freedom UI renders only the open tab, and Creatio remembers
+which tab was open when the page was closed, so neither the initial tab nor controls on closed tabs
+can be assumed. The analyser restores the tab that was open on arrival after walking the others.
+
+## Element Types The Analyser Cannot Settle
+
+Date, time, and date-time controls share a host tag. The analyser uses the picker icon first
+(`Calendar`, `Time`, or `Date/Time`), then the displayed value. For an editable empty control with
+no picker icon it reports: `the control is empty and shows no picker icon; open the picker to see
+which it is, then set the type and mark the entry "pinned": true`.
+
+A read-only empty date/time control has neither icon nor value, so its exact type cannot be
+established. It is reported as `read-only and empty, so the exact type cannot be established;
+presence and caption are still assertable`. Keep it as a presence-only element: a test can use
+`check <code> exists`, `check <code> is readonly`, and caption matching, but cannot make a
+value-type assertion that depends on whether it is Date, Time, or DateTime.
+
 ## Configuration Files
 
 All paths are relative to the working directory.
@@ -101,10 +122,10 @@ All paths are relative to the working directory.
 | --- | --- |
 | `creatio.env.config.json` | `BaseUrl`, optional `AuthUrl`, `Users` (`Username`, `Password`), optional `CasesFolders` and `AnalysisFolders` |
 | `creatio.site.config.json` | `AuthPath`, optional `ODataBasePath`, optional `ProcessStartPath` |
-| `pages/*.json` | one file per page: `name`, `url`, optional `type`, and `elements` (`code`, `label`, `type`, plus type-specific options). The page is implied by the file, so elements never repeat it. |
+| `pages/*.json` | one file per page: `name`, `url`, optional `type`, and `elements` (`code`, `label`, `type`, optional `pinned`, plus type-specific options). The page is implied by the file, so elements never repeat it. |
 | `objects.config.json` | `objects`: `name`, `sectionPage`, `formPage`, `newButton`, `saveButton`, `fields` mapping codes to static-value names |
 | `static.values.json` | object mapping static names to scalar values |
-| `run.config.json` | `headless`, `continueOnFailure`, `runAnalysis`, `elementTimeoutMs`, `pageLoadTimeoutMs`, `reportsDirectory`, `skipFilePrefix` |
+| `run.config.json` | `headless`, `continueOnFailure`, `runAnalysis`, `elementTimeoutMs`, `absenceTimeoutMs`, `pageLoadTimeoutMs`, `reportsDirectory`, `reports`, `skipFilePrefix` |
 
 ```jsonc
 // Configuration/pages/ContactForm.json -- one file per page
@@ -130,8 +151,8 @@ grouped however suits the project. The file name is only a label; a page's ident
 The first pass checks all lines before a browser action runs: unknown commands, malformed arguments, absent pages/elements, unsupported capabilities, incompatible copies, invalid literals, and object workflow references.
 
 ```text
-Unknown command 'opne'. Known commands: check, check-value, click, clear, create, end, goto, open, set, use, wait.
-Element 'X' has unknown type 'Slider'. Known types: Boolean, Button, CasesBar, Date, DateTime, Decimal, Email, Integer, Link, Lookup, Phone, RichText, Text, Time.
+Unknown command 'opne'. Known commands: analyse, check, check-value, click, clear, create, end, goto, open, set, use, wait.
+Element 'X' has unknown type 'Slider'. Known types: Boolean, Button, CasesBar, Date, DateTime, Decimal, Email, Integer, Link, Lookup, Phone, RichText, Tab, Text, Time.
 'wait' expects the unit 'second' or 'minute'.
 ```
 

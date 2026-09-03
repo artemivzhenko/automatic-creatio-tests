@@ -16,6 +16,7 @@ public sealed record UiElementRegistration(
         .Where(i => typeof(IUiElement).IsAssignableFrom(i))
         .ToArray();
 
+    /// <summary>Formats the configured type name and its implementation for diagnostics.</summary>
     public override string ToString() => TypeName + " -> " + ImplementationType.Name;
 }
 
@@ -28,6 +29,7 @@ public sealed class UiElementRegistry
 {
     private readonly Dictionary<string, UiElementRegistration> _byTypeName;
 
+    /// <summary>Builds a case-insensitive type map and rejects duplicate configuration type names.</summary>
     public UiElementRegistry(IEnumerable<UiElementRegistration> registrations)
     {
         _byTypeName = new Dictionary<string, UiElementRegistration>(StringComparer.OrdinalIgnoreCase);
@@ -50,11 +52,14 @@ public sealed class UiElementRegistry
     public IReadOnlyCollection<string> KnownTypeNames =>
         _byTypeName.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase).ToArray();
 
+    /// <summary>Every discovered registration used by factories and the reverse host-tag index.</summary>
     public IReadOnlyCollection<UiElementRegistration> Registrations => _byTypeName.Values.ToArray();
 
+    /// <summary>Looks up a configuration type name without treating an unknown type as an error.</summary>
     public bool TryResolve(string typeName, out UiElementRegistration registration) =>
         _byTypeName.TryGetValue(typeName ?? string.Empty, out registration!);
 
+    /// <summary>Resolves a configuration type name or reports all known names to aid correction.</summary>
     public UiElementRegistration Resolve(string typeName)
     {
         if (TryResolve(typeName, out var registration))

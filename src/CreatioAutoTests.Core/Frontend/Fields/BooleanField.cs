@@ -2,14 +2,17 @@ using Microsoft.Playwright;
 
 namespace CreatioAutoTests.Frontend.Fields;
 
+/// <summary>Checkbox field with Creatio-specific toggle and disabled-state handling.</summary>
 [UiElement("Boolean", HostTag = "crt-checkbox", ValueKind = ValueKind.Boolean)]
 public sealed class BooleanField : FieldElementBase
 {
+    /// <summary>Initializes the checkbox against a configured Creatio control.</summary>
     public BooleanField(ElementRuntimeContext context) : base(context)
     {
     }
 
 
+    /// <summary>Checkbox-specific caption rather than the generic input-label element.</summary>
     protected override ILocator LabelLocator => Root.Locator(".crt-checkbox-label");
 
     /// <summary>
@@ -20,6 +23,7 @@ public sealed class BooleanField : FieldElementBase
     protected override ILocator ValueLocator => Root.Locator(
         "input.mdc-checkbox__native-control, input.mat-checkbox-input, input[type=\"checkbox\"]");
 
+    /// <summary>Returns the checked state in the exact <c>true</c> or <c>false</c> DSL form.</summary>
     public override async Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -30,6 +34,11 @@ public sealed class BooleanField : FieldElementBase
         return await ValueLocator.IsCheckedAsync().ConfigureAwait(false) ? "true" : "false";
     }
 
+    /// <summary>
+    /// Changes the checked state using visible MDC targets before dispatching on the native input.
+    /// Creatio builds disagree about which target receives a click, while clicking the host does not
+    /// toggle an MDC checkbox at all.
+    /// </summary>
     public override async Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default)
     {
         bool target;
@@ -97,12 +106,15 @@ public sealed class BooleanField : FieldElementBase
         }
     }
 
+    /// <summary>Clears the checkbox by setting it to <c>false</c>.</summary>
     public override Task ClearAsync(CancellationToken cancellationToken = default) =>
         SetValueFromStringAsync("false", cancellationToken);
 
+    /// <summary>Returns false because Creatio checkboxes are never required controls.</summary>
     public override Task<bool> IsRequiredAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(false);
 
+    /// <summary>Recognizes disabled markers from both older Material and MDC checkbox markup.</summary>
     public override async Task<bool> IsReadOnlyAsync(CancellationToken cancellationToken = default)
     {
         var input = ValueLocator;

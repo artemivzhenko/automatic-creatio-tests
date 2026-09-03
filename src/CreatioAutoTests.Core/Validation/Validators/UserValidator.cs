@@ -5,6 +5,7 @@ namespace CreatioAutoTests.Validation.Validators;
 /// <summary>Shape of 'use': one username that must exist in the environment configuration.</summary>
 public sealed class UserValidator : ICommandValidator
 {
+    /// <summary>Validates that the script selects one configured user before its browser work begins.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount != 1)

@@ -18,6 +18,7 @@ public sealed record CommandRegistration(
     public bool Accepts(Type elementType) =>
         SupportedTargets.Count == 0 || SupportedTargets.Any(t => t.IsAssignableFrom(elementType));
 
+    /// <summary>Formats the keyword and implementation name for diagnostics.</summary>
     public override string ToString() => Keyword + " -> " + ImplementationType.Name;
 }
 
@@ -29,6 +30,7 @@ public sealed class CommandRegistry
 {
     private readonly Dictionary<string, CommandRegistration> _byKeyword;
 
+    /// <summary>Builds a case-insensitive keyword map and rejects duplicate command registrations at startup.</summary>
     public CommandRegistry(IEnumerable<CommandRegistration> registrations)
     {
         _byKeyword = new Dictionary<string, CommandRegistration>(StringComparer.OrdinalIgnoreCase);
@@ -47,11 +49,14 @@ public sealed class CommandRegistry
         }
     }
 
+    /// <summary>All registered DSL keywords in stable order for help and validation messages.</summary>
     public IReadOnlyCollection<string> Keywords =>
         _byKeyword.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase).ToArray();
 
+    /// <summary>All reflection-discovered command registrations.</summary>
     public IReadOnlyCollection<CommandRegistration> Registrations => _byKeyword.Values.ToArray();
 
+    /// <summary>Looks up a keyword without turning an unknown command into an exception.</summary>
     public bool TryResolve(string keyword, out CommandRegistration registration) =>
         _byKeyword.TryGetValue(keyword ?? string.Empty, out registration!);
 

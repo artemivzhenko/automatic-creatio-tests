@@ -21,6 +21,7 @@ public sealed class CreatioAuthenticator : IDisposable
     private readonly ILogger<CreatioAuthenticator> _logger;
     private readonly Dictionary<string, AuthenticatedUser> _cache;
 
+    /// <summary>Initializes REST authentication with environment credentials and site service paths.</summary>
     public CreatioAuthenticator(
         EnvironmentConfig environment,
         SiteConfig site,
@@ -34,6 +35,7 @@ public sealed class CreatioAuthenticator : IDisposable
         BaseUrl = _environment.BaseUrl.TrimEnd('/');
     }
 
+    /// <summary>Normalized instance base URL used by REST login and browser contexts.</summary>
     public string BaseUrl { get; }
 
     /// <summary>Logs the user in, or returns the cookies obtained earlier in this run.</summary>
@@ -124,5 +126,6 @@ public sealed class CreatioAuthenticator : IDisposable
         return new Uri(BaseUrl + path, UriKind.Absolute);
     }
 
+    /// <summary>Clears cached authenticated user cookies when the run ends.</summary>
     public void Dispose() => _cache.Clear();
 }

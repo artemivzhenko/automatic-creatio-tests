@@ -8,6 +8,7 @@ namespace CreatioAutoTests.Analysis;
 /// </summary>
 public sealed partial class PagePath
 {
+    /// <summary>Parses a raw or absolute Creatio address into its reusable page components.</summary>
     public PagePath(string raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
@@ -40,12 +41,16 @@ public sealed partial class PagePath
         Schema = schema.Success ? schema.Groups[1].Value : null;
     }
 
+    /// <summary>Normalized original page address, including an optional record suffix.</summary>
     public string Raw { get; }
 
+    /// <summary>Configuration URL template with any <c>/edit/{id}</c> suffix removed.</summary>
     public string Url { get; }
 
+    /// <summary>Record identifier supplied in an optional terminal edit suffix.</summary>
     public string? RecordId { get; }
 
+    /// <summary>Freedom UI schema identified by the Card, Section, or Page path fragment.</summary>
     public string? Schema { get; }
 
     /// <summary>Name the page gets in the DSL unless one is given explicitly.</summary>
@@ -63,6 +68,7 @@ public sealed partial class PagePath
         }
     }
 
+    /// <summary>Builds the edit address used when opening a particular record from this template.</summary>
     public string WithRecord(string recordId) => Url.TrimEnd('/') + "/edit/" + recordId;
 
     [GeneratedRegex(@"/edit/([0-9a-fA-F-]{36})/?$")]

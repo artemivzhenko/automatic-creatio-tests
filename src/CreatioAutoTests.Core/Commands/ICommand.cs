@@ -6,5 +6,6 @@ namespace CreatioAutoTests.Commands;
 /// </summary>
 public interface ICommand
 {
+    /// <summary>Executes an already validated command whose targets were resolved before browser activity began.</summary>
     Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default);
 }

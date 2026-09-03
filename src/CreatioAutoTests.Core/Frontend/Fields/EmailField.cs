@@ -14,13 +14,16 @@ public sealed class EmailField : FieldElementBase
     private const string LinkSelector = "a[data-qa=\"email-link-field-href\"]";
     private const string HiddenClass = "crt-input-control-element-hidden";
 
+    /// <summary>Initializes an email field whose stored value may be rendered as a mailto link.</summary>
     public EmailField(ElementRuntimeContext context) : base(context)
     {
     }
 
 
+    /// <summary>Hidden email input used for DOM-based writes.</summary>
     protected override ILocator ValueLocator => Root.Locator(TextContainerSelector).Locator(InputSelector);
 
+    /// <summary>Reads the input while editing or the mailto link Creatio renders after storage.</summary>
     public override async Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -55,6 +58,7 @@ public sealed class EmailField : FieldElementBase
             : href;
     }
 
+    /// <summary>Writes through the DOM because Creatio can hide the stored email input.</summary>
     public override async Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))

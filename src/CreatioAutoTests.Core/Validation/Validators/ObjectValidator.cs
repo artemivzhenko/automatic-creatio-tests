@@ -12,11 +12,13 @@ public sealed class ObjectValidator : ICommandValidator
 {
     private readonly ValueCompatibilityPolicy _policy;
 
+    /// <summary>Initializes static compatibility checks for fields populated by object creation.</summary>
     public ObjectValidator(ValueCompatibilityPolicy policy)
     {
         _policy = policy ?? throw new ArgumentNullException(nameof(policy));
     }
 
+    /// <summary>Validates every page, clickable button, writable field, and static value in a create workflow.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount != 1)

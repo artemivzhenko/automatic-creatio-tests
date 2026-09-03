@@ -10,6 +10,7 @@ namespace CreatioAutoTests.Configuration;
 /// </summary>
 public sealed class ElementDefinition
 {
+    /// <summary>Element-name code by which a DSL command addresses the control on its page.</summary>
     public string Code { get; set; } = string.Empty;
 
     /// <summary>
@@ -19,8 +20,10 @@ public sealed class ElementDefinition
     [JsonIgnore]
     public string Page { get; set; } = string.Empty;
 
+    /// <summary>Expected user-facing caption checked when the element's presence is asserted.</summary>
     public string Label { get; set; } = string.Empty;
 
+    /// <summary>Registered UI element type that determines implementation and static value kind.</summary>
     public string Type { get; set; } = string.Empty;
 
     /// <summary>
@@ -32,6 +35,7 @@ public sealed class ElementDefinition
     /// </summary>
     public bool Pinned { get; set; }
 
+    /// <summary>Type-specific JSON members, validated and bound through the element registration's options class.</summary>
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? Extra { get; set; }
 
@@ -63,19 +67,23 @@ public sealed class ElementDefinition
         AllowTrailingCommas = true
     };
 
+    /// <summary>Formats the configured type, code, and owning page for diagnostics.</summary>
     public override string ToString() => $"{Type} '{Code}' on page '{Page}'";
 }
 
 /// <summary>Composite key that makes an element unique: the same code may live on several pages.</summary>
 public readonly record struct ElementKey(string Page, string Code)
 {
+    /// <summary>Compares page case-insensitively and code case-sensitively for catalog identity.</summary>
     public bool Equals(ElementKey other) =>
         string.Equals(Page, other.Page, StringComparison.OrdinalIgnoreCase) &&
         string.Equals(Code, other.Code, StringComparison.Ordinal);
 
+    /// <summary>Produces a hash consistent with the page-and-code identity comparison.</summary>
     public override int GetHashCode() => HashCode.Combine(
         Page.ToLowerInvariant(),
         Code);
 
+    /// <summary>Formats the catalog identity as page and code.</summary>
     public override string ToString() => $"{Page}/{Code}";
 }

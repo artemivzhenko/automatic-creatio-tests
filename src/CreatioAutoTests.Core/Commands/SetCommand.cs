@@ -16,6 +16,7 @@ namespace CreatioAutoTests.Commands;
     Usage = "set <code> \"value\" | set <code> <sourceCodeOrStaticValue>")]
 public sealed class SetCommand : ICommand
 {
+    /// <summary>Writes a validated literal, static value, or source element value to the target.</summary>
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
         var target = context.Target<IValueElement>();

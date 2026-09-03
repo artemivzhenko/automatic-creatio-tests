@@ -7,11 +7,11 @@ CreatioAutoTests is a DSL for testing Creatio Freedom UI. Test cases are `.act` 
 ## A Test Case At A Glance
 
 ```act
-use testUser
-open TestPage for 0c48c818-08f0-4f70-9b58-be512227f3bf
-set Input_Text "Sample Name 123"
-check-value Input_Text eq "Sample Name 123"
-click SaveButton
+use Supervisor
+open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4
+check CloseButton exists
+check GeneralInfoTab exists
+check JobTitle is not readonly
 ```
 
 ## Requirements
@@ -29,10 +29,10 @@ playwright install chromium
 dotnet run --project src/CreatioAutoTests.Cli -- --validate-only
 ```
 
-Set the Creatio URL and users in [Configuration/creatio.env.config.json](Configuration/creatio.env.config.json). Describe page URLs in [Configuration/pages.config.json](Configuration/pages.config.json), then configure their elements in [Configuration/elements.config.json](Configuration/elements.config.json). Add an `.act` file under [Cases](Cases), then run it:
+Set the Creatio URL and users in [Configuration/creatio.env.config.json](Configuration/creatio.env.config.json). Each page has its own JSON file under [Configuration/pages](Configuration/pages), containing its URL and elements. Use `analyse` to produce or refresh a page file from a live page, then add an `.act` file under [Cases](Cases) and run it:
 
 ```powershell
-dotnet run --project src/CreatioAutoTests.Cli -- --filter test-fields
+dotnet run --project src/CreatioAutoTests.Cli -- --validate-only --filter contact-form-baseline
 ```
 
 ## Running
@@ -40,12 +40,17 @@ dotnet run --project src/CreatioAutoTests.Cli -- --filter test-fields
 ```powershell
 dotnet run --project src/CreatioAutoTests.Cli -- --help
 dotnet run --project src/CreatioAutoTests.Cli -- --root C:\path\to\workspace
-dotnet run --project src/CreatioAutoTests.Cli -- --filter test-fields
+dotnet run --project src/CreatioAutoTests.Cli -- --filter contact-form-baseline
 dotnet run --project src/CreatioAutoTests.Cli -- --verbose
 dotnet run --project src/CreatioAutoTests.Cli -- --validate-only
+dotnet run --project src/CreatioAutoTests.Cli -- analyse "/0/Shell/#Card/Contacts_FormPage/edit/<id>" --name ContactForm
+dotnet run --project src/CreatioAutoTests.Cli -- --analyse
+dotnet run --project src/CreatioAutoTests.Cli -- --analyse-only
 ```
 
 `--validate-only` checks every selected case, configuration reference, command shape, page transition, element capability, and value compatibility without opening a browser.
+
+`analyse` opens a page and writes `Configuration/pages/<name>.json`. `--analyse` runs configured analysis scripts before cases and reloads the catalog; `--analyse-only` runs that first phase without cases.
 
 ## How It Is Put Together
 
@@ -57,8 +62,9 @@ dotnet run --project src/CreatioAutoTests.Cli -- --validate-only
 | Configuration and session | Files, catalog, authentication, browser context |
 | Execution | Parsing, plans, and command execution |
 | Runner | CLI and NUnit-facing orchestration |
+| Analysis | Reads live Freedom UI pages and writes their per-page configuration |
 
-The first pass parses and validates a complete case. Only a valid plan reaches the second pass, which drives Playwright. See [docs/dsl.md](docs/dsl.md) for the language reference.
+The first pass parses and validates a complete case. Only a valid plan reaches the second pass, which drives Playwright. When analysis is selected, analysis scripts run first and the catalog is reloaded before cases start. See [docs/dsl.md](docs/dsl.md) for the language reference.
 
 ## Extending It
 
@@ -68,4 +74,4 @@ To add an element type, copy [src/CreatioAutoTests.Core/Frontend/Fields/TextFiel
 
 ## Licence
 
-See [source/LICENSE](source/LICENSE).
+MIT. See [LICENSE](LICENSE).

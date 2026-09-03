@@ -8,12 +8,16 @@ namespace CreatioAutoTests.Validation;
 /// </summary>
 public sealed record ResolvedTarget(string Code, CatalogEntry Entry)
 {
+    /// <summary>Configured element definition that will later be materialized on an open page.</summary>
     public ElementDefinition Definition => Entry.Definition;
 
+    /// <summary>Concrete CLR element type chosen statically from the catalog entry.</summary>
     public Type ElementType => Entry.ElementType;
 
+    /// <summary>Configured page against which this target was resolved.</summary>
     public string Page => Entry.Page;
 
+    /// <summary>Formats the catalog entry for diagnostics.</summary>
     public override string ToString() => Entry.ToString();
 }
 
@@ -36,8 +40,10 @@ public sealed class ValidationResult
         DeclaresUser = declaresUser;
     }
 
+    /// <summary>Whether the command shape and all of its references passed static validation.</summary>
     public bool IsValid { get; }
 
+    /// <summary>Author-facing validation explanation when <see cref="IsValid"/> is false.</summary>
     public string? Error { get; }
 
     /// <summary>Elements this command will act on, in the order the command expects them.</summary>
@@ -52,15 +58,20 @@ public sealed class ValidationResult
     /// <summary>True for 'use', which is what satisfies the "a script starts with use" rule.</summary>
     public bool DeclaresUser { get; }
 
+    /// <summary>Creates a successful result for a targetless command.</summary>
     public static ValidationResult Ok() => new(true, null, NoTargets, null, false);
 
+    /// <summary>Creates a successful result with the statically resolved command targets.</summary>
     public static ValidationResult Ok(params ResolvedTarget[] targets) =>
         new(true, null, targets, null, false);
 
+    /// <summary>Creates a success that advances the virtual page used to resolve later lines.</summary>
     public static ValidationResult OkOnPage(string nextPage, params ResolvedTarget[] targets) =>
         new(true, null, targets, nextPage, false);
 
+    /// <summary>Creates the successful user declaration that satisfies a script's first-line rule.</summary>
     public static ValidationResult OkWithUser() => new(true, null, NoTargets, null, true);
 
+    /// <summary>Creates an invalid result with an author-facing explanation.</summary>
     public static ValidationResult Fail(string error) => new(false, error, NoTargets, null, false);
 }

@@ -7,12 +7,15 @@ namespace CreatioAutoTests.Frontend.Fields;
 [UiElement("DateTime", HostTag = "crt-datetimepicker", ValueKind = ValueKind.DateTime)]
 public sealed class DateTimeField : DateTimeFieldBase
 {
+    /// <summary>Initializes a picker that retains both calendar date and time of day.</summary>
     public DateTimeField(ElementRuntimeContext context) : base(context)
     {
     }
 
+    /// <summary>Creatio display format used when writing a date and time.</summary>
     protected override string UiFormat => "MM/dd/yyyy h:mm tt";
 
+    /// <summary>Supported 12-hour and 24-hour formats used when reading the picker.</summary>
     protected override string[] UiPatterns => new[]
     {
         "MM/dd/yyyy h:mm tt",

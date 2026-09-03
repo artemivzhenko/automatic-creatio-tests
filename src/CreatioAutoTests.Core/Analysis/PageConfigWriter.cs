@@ -31,11 +31,16 @@ public sealed class PageConfigWriter
 
     private readonly ILogger<PageConfigWriter> _logger;
 
+    /// <summary>Initializes logging for page-scoped configuration writing.</summary>
     public PageConfigWriter(ILogger<PageConfigWriter> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Writes one page file while retaining optionally missing entries and person-pinned decisions,
+    /// so analyzing one page cannot disturb another page's configuration.
+    /// </summary>
     public PageConfigWriteResult Write(
         PageAnalysis analysis,
         string pagesDirectory,

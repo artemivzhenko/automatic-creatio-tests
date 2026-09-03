@@ -6,6 +6,7 @@ namespace CreatioAutoTests.Commands;
 [Command("open", Validator = typeof(PageValidator), Usage = "open <page> [for <recordId>]")]
 public sealed class OpenCommand : ICommand
 {
+    /// <summary>Opens the validated configured page, optionally using the supplied record identifier.</summary>
     public Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
         var pageName = context.Command.ValueAt(0)!;

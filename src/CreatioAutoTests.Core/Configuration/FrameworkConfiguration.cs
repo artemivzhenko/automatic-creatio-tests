@@ -5,17 +5,22 @@ namespace CreatioAutoTests.Configuration;
 /// <summary>Where each configuration file lives, relative to the working directory.</summary>
 public sealed class ConfigurationPaths
 {
+    /// <summary>Relative path of the environment and user credentials file.</summary>
     public string Environment { get; set; } = "Configuration/creatio.env.config.json";
 
+    /// <summary>Relative path of the site-wide service path file.</summary>
     public string Site { get; set; } = "Configuration/creatio.site.config.json";
 
     /// <summary>Directory holding one file per page, each with that page's elements.</summary>
     public string PagesDirectory { get; set; } = "Configuration/pages";
 
+    /// <summary>Relative path of object creation workflow definitions.</summary>
     public string Objects { get; set; } = "Configuration/objects.config.json";
 
+    /// <summary>Relative path of named scalar values used by scripts and object workflows.</summary>
     public string StaticValues { get; set; } = "Configuration/static.values.json";
 
+    /// <summary>Relative path of optional execution timeout and reporting settings.</summary>
     public string RunSettings { get; set; } = "Configuration/run.config.json";
 }
 
@@ -62,18 +67,25 @@ public sealed class FrameworkConfiguration
         return Catalog;
     }
 
+    /// <summary>Target instance address and users loaded for this run.</summary>
     public EnvironmentConfig Environment { get; }
 
+    /// <summary>Site-wide service path settings.</summary>
     public SiteConfig Site { get; }
 
+    /// <summary>Optional runtime timeout, behavior, and report settings.</summary>
     public RunSettings RunSettings { get; }
 
+    /// <summary>Current statically resolvable element catalog, refreshed after analysis when requested.</summary>
     public ElementCatalog Catalog { get; private set; }
 
+    /// <summary>Named scalar values available to DSL commands and object creation.</summary>
     public IReadOnlyDictionary<string, string> StaticValues { get; }
 
+    /// <summary>Object definitions keyed by name for the <c>create</c> command.</summary>
     public IReadOnlyDictionary<string, ObjectDefinition> Objects { get; }
 
+    /// <summary>Configured user names used by static validation.</summary>
     public IReadOnlyCollection<string> UserNames =>
         Environment.Users.Select(u => u.Username).ToArray();
 
@@ -87,6 +99,7 @@ public sealed class FrameworkConfiguration
     /// </summary>
     public IReadOnlyList<string> AnalysisFolders => Environment.AnalysisFolders;
 
+    /// <summary>Loads and validates all framework configuration rooted at the supplied working directory.</summary>
     public static FrameworkConfiguration Load(
         string rootDirectory,
         UiElementRegistry registry,

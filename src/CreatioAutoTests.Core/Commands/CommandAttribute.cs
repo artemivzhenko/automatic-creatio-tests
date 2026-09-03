@@ -8,6 +8,7 @@ namespace CreatioAutoTests.Commands;
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 public sealed class CommandAttribute : Attribute
 {
+    /// <summary>Associates a command implementation with its DSL keyword.</summary>
     public CommandAttribute(string keyword)
     {
         if (string.IsNullOrWhiteSpace(keyword))

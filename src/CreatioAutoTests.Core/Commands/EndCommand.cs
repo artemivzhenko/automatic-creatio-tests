@@ -5,9 +5,14 @@ using Microsoft.Extensions.Logging;
 
 namespace CreatioAutoTests.Commands;
 
+/// <summary>
+/// Logs readable values at the end of a script without failing an otherwise passing run. Controls
+/// on closed Freedom UI tabs are probed with the short absence budget; cancellation still propagates.
+/// </summary>
 [Command("end", Validator = typeof(NoArgumentsValidator), Usage = "end")]
 public sealed class EndCommand : ICommand
 {
+    /// <summary>Reports values for controls currently available on the open page.</summary>
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
         var page = context.Session.CurrentPage;

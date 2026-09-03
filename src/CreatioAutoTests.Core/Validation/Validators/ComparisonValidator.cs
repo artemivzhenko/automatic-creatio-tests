@@ -11,11 +11,13 @@ public sealed class ComparisonValidator : ICommandValidator
 {
     private readonly ValueCompatibilityPolicy _policy;
 
+    /// <summary>Initializes static comparison operator and literal compatibility checking.</summary>
     public ComparisonValidator(ValueCompatibilityPolicy policy)
     {
         _policy = policy ?? throw new ArgumentNullException(nameof(policy));
     }
 
+    /// <summary>Validates a <c>check-value</c> target, operator, and expected literal or static value.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount != 3)

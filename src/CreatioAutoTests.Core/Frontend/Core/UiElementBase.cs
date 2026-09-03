@@ -13,23 +13,31 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
 {
     private ILocator? _root;
 
+    /// <summary>Initializes an element against its configured definition and current browser page.</summary>
     protected UiElementBase(ElementRuntimeContext context)
     {
         Context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
+    /// <summary>Page-bound dependencies shared by all element operations.</summary>
     protected ElementRuntimeContext Context { get; }
 
+    /// <summary>Page that supplies locators for this element.</summary>
     protected IPage Page => Context.Page;
 
+    /// <summary>Static definition that provides the element-name and expected label.</summary>
     protected ElementDefinition Definition => Context.Definition;
 
+    /// <summary>Element-scoped diagnostic logger.</summary>
     protected ILogger Logger => Context.Logger;
 
+    /// <summary>Configured wait budget for controls expected to be present.</summary>
     protected int TimeoutMs => Context.Settings.ElementTimeoutMs;
 
+    /// <summary>Value of the Freedom UI host's <c>element-name</c> attribute.</summary>
     public string Code => Definition.Code;
 
+    /// <summary>Configured caption checked when presence is asserted.</summary>
     public string Label => Definition.Label;
 
     /// <summary>
@@ -41,6 +49,7 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
 
     private static readonly Dictionary<Type, string> HostTagCache = new();
 
+    /// <summary>Reads and caches the host tag declared by a registered element implementation.</summary>
     internal static string HostTagOf(Type type)
     {
         lock (HostTagCache)
@@ -71,6 +80,7 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
     /// </summary>
     protected virtual string BuildSelector() => HostTag + "[element-name=\"" + Code + "\"]";
 
+    /// <summary>Host locator, cached because every element operation starts from the same control.</summary>
     protected ILocator Root => _root ??= Page.Locator(BuildSelector()).First;
 
     /// <summary>
@@ -87,9 +97,11 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
     /// <summary>Element that carries the caption. Overridden per control type.</summary>
     protected virtual ILocator LabelLocator => Root.Locator(".crt-input-label");
 
+    /// <summary>Checks presence using the normal configured element timeout.</summary>
     public Task<bool> ExistsAsync(CancellationToken cancellationToken = default) =>
         ExistsAsync(TimeoutMs, cancellationToken);
 
+    /// <summary>Checks presence using a caller-provided budget, primarily for expected absence.</summary>
     public virtual async Task<bool> ExistsAsync(int timeoutMs, CancellationToken cancellationToken = default)
     {
         try
@@ -114,6 +126,7 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
         }
     }
 
+    /// <summary>Reads the rendered caption for comparison with the configured label.</summary>
     public virtual async Task<string?> GetActualLabelAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -151,11 +164,13 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
                && !string.Equals(attributeValue, "false", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>Creates the consistent error used when an expected configured control is absent.</summary>
     protected InvalidOperationException NotFound()
     {
         return new InvalidOperationException(
             "Element '" + Code + "' (" + HostTag + ") was not found on page '" + Definition.Page + "'.");
     }
 
+    /// <summary>Identifies the concrete element and its configuration code in diagnostics.</summary>
     public override string ToString() => GetType().Name + "(" + Code + ")";
 }

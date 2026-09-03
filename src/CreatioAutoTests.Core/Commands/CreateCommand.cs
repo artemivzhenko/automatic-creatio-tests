@@ -15,6 +15,7 @@ namespace CreatioAutoTests.Commands;
 [Command("create", Validator = typeof(ObjectValidator), Usage = "create <object>")]
 public sealed class CreateCommand : ICommand
 {
+    /// <summary>Executes the validated section, New, form, fill, and Save workflow for an object definition.</summary>
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
         var objectName = context.Command.ValueAt(0)!;

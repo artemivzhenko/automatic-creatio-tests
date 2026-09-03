@@ -10,6 +10,7 @@ public sealed class UiElementFactory
     private readonly UiElementRegistry _registry;
     private readonly ILoggerFactory _loggerFactory;
 
+    /// <summary>Initializes the factory with the discovered types and their diagnostic logger source.</summary>
     public UiElementFactory(UiElementRegistry registry, ILoggerFactory loggerFactory)
     {
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));

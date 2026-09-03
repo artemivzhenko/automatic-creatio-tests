@@ -15,12 +15,18 @@ public sealed class ScriptValidator
     private readonly CommandRegistry _commands;
     private readonly IServiceProvider _services;
 
+    /// <summary>Initializes reflection-discovered command definitions and their validator service provider.</summary>
     public ScriptValidator(CommandRegistry commands, IServiceProvider services)
     {
         _commands = commands ?? throw new ArgumentNullException(nameof(commands));
         _services = services ?? throw new ArgumentNullException(nameof(services));
     }
 
+    /// <summary>
+    /// Validates every line and accumulates all issues so authors can fix a complete file at once.
+    /// Virtual page transitions from <c>open</c> and <c>create</c> make later element references
+    /// resolve against the page where execution will stand.
+    /// </summary>
     public ExecutionPlan Validate(
         string testName,
         string filePath,

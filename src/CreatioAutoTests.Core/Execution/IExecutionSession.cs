@@ -12,12 +12,16 @@ namespace CreatioAutoTests.Execution;
 /// </summary>
 public interface IExecutionSession
 {
+    /// <summary>Runtime timeouts and failure-continuation settings that commands honor.</summary>
     RunSettings Settings { get; }
 
+    /// <summary>Current static page and element catalog from which commands materialize targets.</summary>
     ElementCatalog Catalog { get; }
 
+    /// <summary>Named scalar values available for command argument expansion.</summary>
     IReadOnlyDictionary<string, string> StaticValues { get; }
 
+    /// <summary>Configured business-object workflows used by the <c>create</c> command.</summary>
     IReadOnlyDictionary<string, ObjectDefinition> Objects { get; }
 
     /// <summary>User selected by the last 'use', or null before it runs.</summary>

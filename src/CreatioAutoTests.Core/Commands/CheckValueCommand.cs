@@ -16,6 +16,7 @@ namespace CreatioAutoTests.Commands;
     Usage = "check-value <code> eq|ne|gt|ge|lt|le|contains|startswith|endswith \"expected\"")]
 public sealed class CheckValueCommand : ICommand
 {
+    /// <summary>Compares a target value using the static kind recorded during validation.</summary>
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
         var element = context.Target<IValueElement>();

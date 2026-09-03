@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>CreatioAutoTests.Cli</RootNamespace>
     <AssemblyName>creatio-tests</AssemblyName>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

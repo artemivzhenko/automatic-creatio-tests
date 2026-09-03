@@ -16,6 +16,7 @@ public sealed class CommandExecutor
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<CommandExecutor> _logger;
 
+    /// <summary>Initializes command activation and logger creation for executing validated plan steps.</summary>
     public CommandExecutor(IServiceProvider services, ILoggerFactory loggerFactory)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));

@@ -9,6 +9,7 @@ namespace CreatioAutoTests.Validation.Validators;
 /// </summary>
 public sealed class SingleTargetValidator : ICommandValidator
 {
+    /// <summary>Validates and statically resolves the single target shared by click, clear, and goto.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount != 1)

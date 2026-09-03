@@ -11,13 +11,16 @@ public sealed class RichTextField : FieldElementBase
 {
     private const string EditableSelector = ".cke_textarea_inline";
 
+    /// <summary>Initializes the CKEditor-backed rich text field.</summary>
     public RichTextField(ElementRuntimeContext context) : base(context)
     {
     }
 
 
+    /// <summary>CKEditor's editable content area.</summary>
     protected override ILocator ValueLocator => Root.Locator(EditableSelector);
 
+    /// <summary>Reads the editor's rendered text content.</summary>
     public override async Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -28,6 +31,7 @@ public sealed class RichTextField : FieldElementBase
         return await ValueLocator.InnerTextAsync().ConfigureAwait(false);
     }
 
+    /// <summary>Writes through the CKEditor instance because direct DOM values are ignored by the editor.</summary>
     public override async Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))

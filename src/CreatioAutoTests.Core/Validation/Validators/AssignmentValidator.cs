@@ -12,11 +12,13 @@ public sealed class AssignmentValidator : ICommandValidator
 {
     private readonly ValueCompatibilityPolicy _policy;
 
+    /// <summary>Initializes static literal and source-to-target compatibility checking.</summary>
     public AssignmentValidator(ValueCompatibilityPolicy policy)
     {
         _policy = policy ?? throw new ArgumentNullException(nameof(policy));
     }
 
+    /// <summary>Validates a <c>set</c> target and resolves its literal, static value, or source element.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount != 2)

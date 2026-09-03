@@ -18,6 +18,7 @@ namespace CreatioAutoTests.Commands;
     Usage = "check <code> [not] exists | check <code> is [not] required|readonly")]
 public sealed class CheckCommand : ICommand
 {
+    /// <summary>Asserts validated presence, absence, required, or readonly state on the target.</summary>
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
         var element = context.Target<IExistable>();

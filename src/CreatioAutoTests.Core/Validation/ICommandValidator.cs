@@ -10,5 +10,6 @@ namespace CreatioAutoTests.Validation;
 /// </summary>
 public interface ICommandValidator
 {
+    /// <summary>Checks one parsed command and returns static targets or an author-facing failure.</summary>
     ValidationResult Validate(ParsedCommand command, ValidationContext context);
 }

@@ -24,12 +24,17 @@ public sealed partial class PageAnalyzer
     private readonly HostTagIndex _index;
     private readonly ILogger<PageAnalyzer> _logger;
 
+    /// <summary>Initializes registry-driven DOM tag discovery and analysis diagnostics.</summary>
     public PageAnalyzer(UiElementRegistry registry, ILogger<PageAnalyzer> logger)
     {
         _index = new HostTagIndex(registry ?? throw new ArgumentNullException(nameof(registry)));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Extracts controls from an open page and, when requested, visits every tab because Freedom UI
+    /// renders only the open tab while retaining hidden containers for those already visited.
+    /// </summary>
     public async Task<PageAnalysis> AnalyzeAsync(
         IPage page,
         string pageName,

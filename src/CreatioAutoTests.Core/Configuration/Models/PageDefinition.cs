@@ -17,6 +17,7 @@ public sealed class PageDefinition
     /// <summary>Path under the base URL. The framework appends /edit/{id} when a record is opened.</summary>
     public string Url { get; set; } = string.Empty;
 
+    /// <summary>Declared page technology, defaulting to the supported Freedom UI runtime.</summary>
     public string Type { get; set; } = "FreedomUI";
 
     /// <summary>
@@ -29,5 +30,6 @@ public sealed class PageDefinition
     [JsonIgnore]
     public string? SourceFile { get; set; }
 
+    /// <summary>Formats the DSL page name and its base-relative address for diagnostics.</summary>
     public override string ToString() => Name + " (" + Url + ")";
 }

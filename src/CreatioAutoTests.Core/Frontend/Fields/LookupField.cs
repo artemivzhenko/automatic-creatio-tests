@@ -16,17 +16,20 @@ public sealed class LookupField : FieldElementBase, INavigableToRecord
     private const int OptionPollIntervalMs = 100;
     private const int SettleAfterPickMs = 200;
 
+    /// <summary>Initializes the autocomplete-backed lookup field.</summary>
     public LookupField(ElementRuntimeContext context) : base(context)
     {
     }
 
 
+    /// <summary>Input that accepts lookup search text across supported Creatio versions.</summary>
     protected override ILocator ValueLocator =>
         Root.Locator(MaterialInputSelector + ", input.crt-autocomplete-input, input[role=\"combobox\"]");
 
     /// <summary>Href of the record link, refreshed on every read. Used by the 'goto' command.</summary>
     public string? RecordPageUrl { get; private set; }
 
+    /// <summary>Checks lookup-specific readonly state because these controls omit the base lock icon.</summary>
     public override async Task<bool> IsReadOnlyAsync(CancellationToken cancellationToken = default)
     {
         var input = ValueLocator;
@@ -44,6 +47,7 @@ public sealed class LookupField : FieldElementBase, INavigableToRecord
                || disabled;
     }
 
+    /// <summary>Reads the committed link when present and refreshes its record URL for <c>goto</c>.</summary>
     public override async Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -79,6 +83,10 @@ public sealed class LookupField : FieldElementBase, INavigableToRecord
         }
     }
 
+    /// <summary>
+    /// Drives the asynchronous autocomplete and commits the requested selectable option. Polling is
+    /// necessary because the panel becomes visible before Creatio has loaded its option rows.
+    /// </summary>
     public override async Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -135,6 +143,7 @@ public sealed class LookupField : FieldElementBase, INavigableToRecord
         }
     }
 
+    /// <summary>Uses the lookup clear icon when available, then falls back to clearing the input.</summary>
     public override async Task ClearAsync(CancellationToken cancellationToken = default)
     {
         var clearButton = Root.Locator(".combobox-expander.clear, mat-icon[svgicon=\"small-close\"]");
@@ -155,6 +164,7 @@ public sealed class LookupField : FieldElementBase, INavigableToRecord
         await ValueLocator.FillAsync(string.Empty).ConfigureAwait(false);
     }
 
+    /// <summary>Follows the committed record link required by the <c>goto</c> command.</summary>
     public async Task NavigateToRecordAsync(CancellationToken cancellationToken = default)
     {
         await GetValueAsStringAsync(cancellationToken).ConfigureAwait(false);

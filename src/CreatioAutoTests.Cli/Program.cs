@@ -10,6 +10,7 @@ namespace CreatioAutoTests.Cli;
 /// </summary>
 public static class Program
 {
+    /// <summary>Runs CLI analysis, validation, or test execution and returns its process exit code.</summary>
     public static async Task<int> Main(string[] args)
     {
         if (args.Contains("--help") || args.Contains("-h"))

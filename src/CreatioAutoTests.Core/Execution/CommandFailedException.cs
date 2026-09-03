@@ -7,10 +7,12 @@ namespace CreatioAutoTests.Execution;
 /// </summary>
 public sealed class CommandFailedException : Exception
 {
+    /// <summary>Creates a command-level test failure with an author-facing explanation.</summary>
     public CommandFailedException(string message) : base(message)
     {
     }
 
+    /// <summary>Creates a command-level test failure that preserves its underlying exception.</summary>
     public CommandFailedException(string message, Exception innerException) : base(message, innerException)
     {
     }

@@ -2,8 +2,10 @@ using CreatioAutoTests.Execution;
 
 namespace CreatioAutoTests.Validation.Validators;
 
+/// <summary>Validates English duration syntax shared by the <c>wait</c> command.</summary>
 public sealed class DurationValidator : ICommandValidator
 {
+    /// <summary>Requires a positive number and the exact lower-case unit <c>second</c> or <c>minute</c>.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount != 2)
@@ -25,6 +27,7 @@ public sealed class DurationValidator : ICommandValidator
         return ValidationResult.Ok();
     }
 
+    /// <summary>Converts an already validated duration into the delay used by execution.</summary>
     public static int ToMilliseconds(ParsedCommand command)
     {
         var amount = int.Parse(command.ValueAt(0)!);

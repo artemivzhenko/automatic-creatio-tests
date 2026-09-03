@@ -13,6 +13,7 @@ namespace CreatioAutoTests.Validation.Validators;
 /// </summary>
 public sealed class AnalyseValidator : ICommandValidator
 {
+    /// <summary>Validates analysis syntax without requiring its optional page address in the catalog.</summary>
     public ValidationResult Validate(ParsedCommand command, ValidationContext context)
     {
         if (command.ArgumentCount > 2)

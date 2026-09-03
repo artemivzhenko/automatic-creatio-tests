@@ -10,6 +10,7 @@ public sealed class HostTagIndex
 {
     private readonly Dictionary<string, List<UiElementRegistration>> _byTag;
 
+    /// <summary>Builds the reverse host-tag lookup from every reflection-discovered element type.</summary>
     public HostTagIndex(UiElementRegistry registry)
     {
         ArgumentNullException.ThrowIfNull(registry);

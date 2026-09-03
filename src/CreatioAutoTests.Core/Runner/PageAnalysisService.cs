@@ -22,6 +22,7 @@ public sealed class PageAnalysisService
     private readonly CreatioAuthenticator _authenticator;
     private readonly ILoggerFactory _loggerFactory;
 
+    /// <summary>Initializes the configuration, browser, analysis, and writing services used by CLI analysis.</summary>
     public PageAnalysisService(
         FrameworkConfiguration configuration,
         ConfigurationPaths paths,
@@ -38,6 +39,7 @@ public sealed class PageAnalysisService
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
+    /// <summary>Opens a raw page address, analyzes its controls, and optionally writes its page configuration.</summary>
     public async Task<(PageAnalysis Analysis, PageConfigWriteResult Written)> AnalyseAsync(
         string address,
         string? pageName = null,

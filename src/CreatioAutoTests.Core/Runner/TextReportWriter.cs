@@ -10,12 +10,14 @@ public sealed class TextReportWriter : IReportWriter
     private readonly RunSettings _settings;
     private readonly ILogger<TextReportWriter> _logger;
 
+    /// <summary>Initializes plain-text reporting with configured output location and diagnostics.</summary>
     public TextReportWriter(RunSettings settings, ILogger<TextReportWriter> logger)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>Writes the completed run to a timestamped text artifact and logs its case summary.</summary>
     public async Task WriteAsync(RunResult result, CancellationToken cancellationToken = default)
     {
         var report = Render(result);

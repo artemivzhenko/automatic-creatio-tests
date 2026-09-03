@@ -9,18 +9,22 @@ namespace CreatioAutoTests.Frontend;
 /// </summary>
 public abstract class NumberFieldBase : FieldElementBase
 {
+    /// <summary>Initializes numeric field behavior for an integer or decimal implementation.</summary>
     protected NumberFieldBase(ElementRuntimeContext context) : base(context)
     {
     }
 
 
+    /// <summary>Freedom UI host tag shared by integer and decimal controls.</summary>
     protected override string HostTag => "crt-number-input";
 
+    /// <summary>Angular Material input that renders the numeric value.</summary>
     protected override ILocator ValueLocator => Root.Locator(MaterialInputSelector);
 
     /// <summary>False for integer controls, which reject a fractional value outright.</summary>
     protected abstract bool AllowsFraction { get; }
 
+    /// <summary>Reads a number and returns its invariant string representation.</summary>
     public override async Task<string?> GetValueAsStringAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))
@@ -34,6 +38,7 @@ public abstract class NumberFieldBase : FieldElementBase
         return parsed?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
     }
 
+    /// <summary>Validates and writes an invariant numeric value, honoring fractional support.</summary>
     public override async Task SetValueFromStringAsync(string value, CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))

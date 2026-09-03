@@ -14,17 +14,24 @@ public sealed class Button : UiElementBase, IClickable
 
     private readonly ButtonOptions _options;
 
+    /// <summary>Initializes a button using behavior supplied by its configuration options.</summary>
     public Button(ElementRuntimeContext context) : base(context)
     {
         _options = context.Definition.BindOptions<ButtonOptions>();
     }
 
 
+    /// <summary>Supports the caption variants used by Freedom UI button implementations.</summary>
     protected override ILocator LabelLocator =>
         Root.Locator(".crt-button-caption, .btn-reversible-content, .mdc-button__label");
 
     private ILocator Clickable => Root.Locator("button, .mdc-button, .mat-mdc-unelevated-button");
 
+    /// <summary>
+    /// Performs the <c>click</c> command and applies configured save confirmation behavior. A
+    /// configured second Save click is a workaround for Creatio dropping the first click, not a
+    /// timing guess.
+    /// </summary>
     public async Task ClickAsync(CancellationToken cancellationToken = default)
     {
         if (!await ExistsAsync(cancellationToken).ConfigureAwait(false))

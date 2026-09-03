@@ -8,6 +8,7 @@ namespace CreatioAutoTests.Frontend;
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 public sealed class UiElementAttribute : Attribute
 {
+    /// <summary>Associates an implementation with the configuration type name.</summary>
     public UiElementAttribute(string typeName)
     {
         if (string.IsNullOrWhiteSpace(typeName))

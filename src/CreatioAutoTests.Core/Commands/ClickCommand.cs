@@ -15,6 +15,7 @@ namespace CreatioAutoTests.Commands;
     Usage = "click <code>")]
 public sealed class ClickCommand : ICommand
 {
+    /// <summary>Delegates clicking to the resolved target's declared capability.</summary>
     public Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default) =>
         context.Target<IClickable>().ClickAsync(cancellationToken);
 }

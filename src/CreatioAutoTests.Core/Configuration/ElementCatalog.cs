@@ -18,15 +18,20 @@ public sealed class ElementCatalog
         _pages = pages;
     }
 
+    /// <summary>All configured pages, each owning its configured elements.</summary>
     public IReadOnlyCollection<PageDefinition> Pages => _pages.Values;
 
+    /// <summary>All elements keyed by their page-and-code identity.</summary>
     public IReadOnlyCollection<CatalogEntry> Entries => _entries.Values;
 
+    /// <summary>Returns whether a page name exists in the configured catalog.</summary>
     public bool PageExists(string pageName) => _pages.ContainsKey(pageName ?? string.Empty);
 
+    /// <summary>Looks up a configured page without throwing for an unknown name.</summary>
     public bool TryGetPage(string pageName, out PageDefinition page) =>
         _pages.TryGetValue(pageName ?? string.Empty, out page!);
 
+    /// <summary>Looks up an element by page and code, allowing the same code on different pages.</summary>
     public bool TryGetElement(string pageName, string code, out CatalogEntry entry) =>
         _entries.TryGetValue(new ElementKey(pageName ?? string.Empty, code ?? string.Empty), out entry!);
 
@@ -40,6 +45,7 @@ public sealed class ElementCatalog
             .ToArray();
     }
 
+    /// <summary>Configured page names in stable order for validation messages.</summary>
     public IReadOnlyCollection<string> PageNames =>
         _pages.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase).ToArray();
 
@@ -207,16 +213,21 @@ public sealed class ElementCatalog
 /// <summary>A configured element paired with the implementation class that will realise it.</summary>
 public sealed record CatalogEntry(ElementDefinition Definition, UiElementRegistration Registration)
 {
+    /// <summary>Element code unique within the entry's configured page.</summary>
     public string Code => Definition.Code;
 
+    /// <summary>Configured page that owns this element.</summary>
     public string Page => Definition.Page;
 
+    /// <summary>Concrete CLR class that materializes this configured element at execution time.</summary>
     public Type ElementType => Registration.ImplementationType;
 
+    /// <summary>Static value category used to validate assignments and comparisons before execution.</summary>
     public Frontend.ValueKind ValueKind => Registration.ValueKind;
 
     /// <summary>True when the implementation offers the requested capability or concrete type.</summary>
     public bool Supports(Type capability) => capability.IsAssignableFrom(Registration.ImplementationType);
 
+    /// <summary>Formats the configured element for diagnostics.</summary>
     public override string ToString() => Definition.ToString();
 }

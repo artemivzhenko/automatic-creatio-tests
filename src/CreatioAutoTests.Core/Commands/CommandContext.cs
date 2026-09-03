@@ -13,6 +13,7 @@ public sealed class CommandContext
 {
     private readonly IReadOnlyList<IUiElement> _elements;
 
+    /// <summary>Combines a validated execution step with its page-bound elements and session services.</summary>
     public CommandContext(
         ExecutionStep step,
         IReadOnlyList<IUiElement> elements,
@@ -25,12 +26,16 @@ public sealed class CommandContext
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>Validated plan step currently being executed.</summary>
     public ExecutionStep Step { get; }
 
+    /// <summary>Parsed DSL command belonging to the validated step.</summary>
     public ParsedCommand Command => Step.Command;
 
+    /// <summary>Live session used by commands that navigate, authenticate, or materialize elements.</summary>
     public IExecutionSession Session { get; }
 
+    /// <summary>Structured command-level diagnostic logger.</summary>
     public ILogger Logger { get; }
 
     /// <summary>Live elements, in the order the validator resolved them.</summary>
@@ -39,6 +44,7 @@ public sealed class CommandContext
     /// <summary>Static side of the same targets: definition, implementation type and value kind.</summary>
     public IReadOnlyList<ResolvedTarget> Resolved => Step.Targets;
 
+    /// <summary>Returns whether validation produced a live target at the requested position.</summary>
     public bool HasTarget(int index) => index >= 0 && index < _elements.Count;
 
     /// <summary>Value kind the validator determined for a target, without touching the browser.</summary>
