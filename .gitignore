@@ -34,10 +34,10 @@ playwright-report/
 # Reference copy of the pre-refactoring framework
 source/*
 
-# Holds real credentials once ai_helpers/generate_config.py has filled it in
+# Holds a real password. Copy creatio.env.config.example.json to create it.
 Configuration/creatio.env.config.json
 
-# Local helper scratch
+# Our own working material, not part of the framework
 ai_helpers/*
 backlog/*
 copilot/*

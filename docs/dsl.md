@@ -70,6 +70,25 @@ Values cross command layers as text. Dates accept `yyyy-MM-ddTHH:mm:ss`, `yyyy-M
 
 Boolean literals are exactly `true` or `false`; numbers use invariant decimal syntax.
 
+## Finding A Page
+
+Analysing a page needs its schema name, and the name is rarely what you would guess: contacts live on
+`Contacts_FormPage`, plural, while `ContactPageV2` is the classic UI page for the same entity. Nothing
+in the browser lists them, so the runner reads them over OData:
+
+```bash
+creatio-tests schemas Contact          # form pages whose name contains "Contact"
+creatio-tests schemas                  # every form page on the instance
+creatio-tests schemas --list-pages     # section pages instead
+```
+
+Each result comes with the address that opens it, ready to paste into `analyse`:
+
+```
+  Contacts_FormPage
+      /0/Shell/#Card/Contacts_FormPage/edit/<recordId>
+```
+
 ## Analysis Phase
 
 A run has two phases. Analysis scripts live in the folders named by `AnalysisFolders` and run first;
@@ -120,7 +139,7 @@ All paths are relative to the working directory.
 
 | File | Fields |
 | --- | --- |
-| `creatio.env.config.json` | `BaseUrl`, optional `AuthUrl`, `Users` (`Username`, `Password`), optional `CasesFolders` and `AnalysisFolders` |
+| `creatio.env.config.json` (copy `creatio.env.config.example.json`) | `BaseUrl`, optional `AuthUrl`, `Users` (`Username`, `Password`), optional `CasesFolders` and `AnalysisFolders` |
 | `creatio.site.config.json` | `AuthPath`, optional `ODataBasePath`, optional `ProcessStartPath` |
 | `pages/*.json` | one file per page: `name`, `url`, optional `type`, and `elements` (`code`, `label`, `type`, optional `pinned`, plus type-specific options). The page is implied by the file, so elements never repeat it. |
 | `objects.config.json` | `objects`: `name`, `sectionPage`, `formPage`, `newButton`, `saveButton`, `fields` mapping codes to static-value names |
@@ -144,7 +163,6 @@ All paths are relative to the working directory.
 
 Every `.json` file under `Configuration/pages` is loaded, including subdirectories, so pages can be
 grouped however suits the project. The file name is only a label; a page's identity is its `name`.
-`ai_helpers/analyse.py` writes these files from a live page.
 
 ## Validation
 

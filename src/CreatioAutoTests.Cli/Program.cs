@@ -23,6 +23,11 @@ public static class Program
         var analysing = args.Length > 0 &&
                         string.Equals(args[0], "analyse", StringComparison.OrdinalIgnoreCase);
 
+        // 'schemas' answers the question you have before you can analyse anything: what are this
+        // instance's pages called. The names are rarely what you would guess.
+        var listingSchemas = args.Length > 0 &&
+                             string.Equals(args[0], "schemas", StringComparison.OrdinalIgnoreCase);
+
         var root = GetOption(args, "--root") ?? Directory.GetCurrentDirectory();
         var filter = GetOption(args, "--filter");
         var validateOnly = args.Contains("--validate-only");
@@ -42,6 +47,11 @@ public static class Program
 
             await using var provider = services.BuildServiceProvider();
 
+            if (listingSchemas)
+            {
+                return await ListSchemasAsync(provider, args).ConfigureAwait(false);
+            }
+
             if (analysing)
             {
                 return await AnalyseAsync(provider, args).ConfigureAwait(false);
@@ -59,6 +69,37 @@ public static class Program
             Console.Error.WriteLine("The run could not start: " + ex.Message);
             return 2;
         }
+    }
+
+    /// <summary>Lists the instance's Freedom UI page schemas and the address that opens each.</summary>
+    private static async Task<int> ListSchemasAsync(IServiceProvider provider, string[] args)
+    {
+        var term = args.Length > 1 && !args[1].StartsWith('-') ? args[1] : GetOption(args, "--filter");
+        var suffix = args.Contains("--list-pages")
+            ? SchemaDiscoveryService.ListPageSuffix
+            : SchemaDiscoveryService.FormPageSuffix;
+
+        var schemas = await provider
+            .GetRequiredService<SchemaDiscoveryService>()
+            .FindAsync(term, suffix)
+            .ConfigureAwait(false);
+
+        if (schemas.Count == 0)
+        {
+            Console.WriteLine("No page schema matched.");
+            return 0;
+        }
+
+        Console.WriteLine(schemas.Count + " page schema(s):");
+        Console.WriteLine();
+
+        foreach (var schema in schemas)
+        {
+            Console.WriteLine("  " + schema.Name);
+            Console.WriteLine("      " + schema.AddressTemplate);
+        }
+
+        return 0;
     }
 
     /// <summary>Describes one page and writes Configuration/pages/&lt;Name&gt;.json.</summary>
@@ -231,6 +272,9 @@ public static class Program
     private static void PrintUsage()
     {
         Console.WriteLine("creatio-tests - runs .act test cases against a Creatio instance");
+        Console.WriteLine();
+        Console.WriteLine("  schemas [<text>]        list this instance's Freedom UI page schemas");
+        Console.WriteLine("      --list-pages         list section pages instead of form pages");
         Console.WriteLine();
         Console.WriteLine("  analyse \"<page path>\"   describe a page and write Configuration/pages/<Name>.json");
         Console.WriteLine("      --name <name>        page name for the DSL; defaults to the schema in the path");

@@ -17,23 +17,59 @@ check JobTitle is not readonly
 ## Requirements
 
 - .NET 8 SDK
-- A reachable Creatio instance
-- Chromium for Playwright: `playwright install chromium`
+- Windows PowerShell or PowerShell 7, to run the Playwright bootstrapper
+- Chromium, installed in step 2 below
+- A reachable Creatio instance, and a user that can log in to it
+
+Verified against Creatio 8.3.2 (.NET Framework, English interface). Other versions and interface
+languages are untested; see [docs/dsl.md](docs/dsl.md) for the one place the interface language
+matters.
 
 ## Getting Started
 
 ```powershell
 git clone <repository-url>
 Set-Location automatic-creatio-tests
-playwright install chromium
+
+# 1. Point the framework at a Creatio instance.
+Copy-Item Configuration/creatio.env.config.example.json Configuration/creatio.env.config.json
+#    then edit that file: BaseUrl, and a username and password that can log in.
+#    It is gitignored, because it holds a password.
+
+# 2. Build, then install the browser Playwright drives.
+dotnet build
+powershell -File src/CreatioAutoTests.Cli/bin/Debug/net8.0/playwright.ps1 install chromium
+
+# 3. Check the bundled cases without opening a browser.
 dotnet run --project src/CreatioAutoTests.Cli -- --validate-only
 ```
 
-Set the Creatio URL and users in [Configuration/creatio.env.config.json](Configuration/creatio.env.config.json). Each page has its own JSON file under [Configuration/pages](Configuration/pages), containing its URL and elements. Use `analyse` to produce or refresh a page file from a live page, then add an `.act` file under [Cases](Cases) and run it:
+The `playwright.ps1` bootstrapper is produced by the build, which is why step 2 is in that order.
+There is no global `playwright` command to install.
+
+Step 3 needs no Creatio instance: it parses and validates every case against the configuration. To
+run cases for real you also need pages described under
+[Configuration/pages](Configuration/pages) — one JSON file per page, holding its URL and its
+elements. The bundled ones were produced from a Creatio 8.3 instance and are examples; describe your
+own. Find the page's schema name first, then describe it:
 
 ```powershell
-dotnet run --project src/CreatioAutoTests.Cli -- --validate-only --filter contact-form-baseline
+dotnet run --project src/CreatioAutoTests.Cli -- schemas Contact
 ```
+
+```
+  Contacts_FormPage
+      /0/Shell/#Card/Contacts_FormPage/edit/<recordId>
+```
+
+Then:
+
+```powershell
+dotnet run --project src/CreatioAutoTests.Cli -- `
+    analyse "/0/Shell/#Card/Contacts_FormPage/edit/<recordId>" --name ContactForm --list
+```
+
+Then write an `.act` file under [Cases](Cases) and run it.
 
 ## Running
 

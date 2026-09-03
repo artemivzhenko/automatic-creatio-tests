@@ -45,6 +45,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PageAnalyzer>();
         services.AddSingleton<PageConfigWriter>();
         services.AddSingleton<PageAnalysisService>();
+        services.AddSingleton<CreatioODataClient>();
+        services.AddSingleton<SchemaDiscoveryService>();
         services.AddSingleton<ValueCompatibilityPolicy>();
         services.AddSingleton<ScriptParser>();
         services.AddSingleton<ScriptValidator>();

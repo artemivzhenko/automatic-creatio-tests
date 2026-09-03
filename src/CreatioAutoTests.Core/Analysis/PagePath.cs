@@ -9,6 +9,12 @@ namespace CreatioAutoTests.Analysis;
 public sealed partial class PagePath
 {
     /// <summary>Parses a raw or absolute Creatio address into its reusable page components.</summary>
+    /// <summary>Route prefix a Freedom UI form page is opened through.</summary>
+    public const string CardRoute = "/0/Shell/#Card/";
+
+    /// <summary>Splits a page address into the parts configuration and the DSL each need.</summary>
+    /// <param name="raw">Address as the browser shows it, with or without the instance prefix.</param>
+    /// <exception cref="ArgumentException">The address was empty.</exception>
     public PagePath(string raw)
     {
         if (string.IsNullOrWhiteSpace(raw))

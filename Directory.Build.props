@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <Version>1.0.0</Version>
+    <Product>CreatioAutoTests</Product>
+    <Authors>Artem Ivzhenko</Authors>
+    <Description>A DSL and runner for automated testing of Creatio Freedom UI.</Description>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
