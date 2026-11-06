@@ -19,7 +19,47 @@
       "type": "Button"
     },
     {
+      "code": "AttachmentAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AttachmentRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
       "code": "BackButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BulkEmailRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BulkEmailSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BulkEmailSubscriptionRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BulkEmailSubscriptionSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CampaignRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CampaignSettingsButton",
       "label": "",
       "type": "Button"
     },
@@ -39,6 +79,21 @@
       "type": "Button"
     },
     {
+      "code": "CasesAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CasesRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CasesSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
       "code": "CloseButton",
       "label": "Close",
       "type": "Button"
@@ -49,9 +104,327 @@
       "type": "Button"
     },
     {
+      "code": "CreateLeadButton",
+      "label": "Create lead",
+      "type": "Button"
+    },
+    {
+      "code": "EventRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "EventSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "GridDetailSettingsBtn_icmycs2",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "LeadAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "LeadRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "LeadSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "MrktLeadRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OpportunityAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OpportunityRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OpportunitySettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OrderAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OrderRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OrderSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "RecommendedProductRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "RecommendedProductSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ServiceAgreementsRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ServiceAgreementsSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
       "code": "SetRecordRightsButton",
       "label": "",
       "type": "Button"
+    },
+    {
+      "code": "SubmittedFormRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "SubmittedFormSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "UnsubscribeButton",
+      "label": "Unsubscribe contact",
+      "type": "Button"
+    },
+    {
+      "code": "WebActionRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "WebActionSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "WebSessionRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "WebSessionSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AddressList",
+      "label": "Addresses",
+      "type": "DataGrid",
+      "columns": [
+        "Address type",
+        "Full address",
+        "Primary"
+      ]
+    },
+    {
+      "code": "BulkEmailList",
+      "label": "Bulk emails",
+      "type": "DataGrid",
+      "columns": [
+        "Bulk email",
+        "Type",
+        "Response",
+        "Response reason",
+        "Sent date"
+      ]
+    },
+    {
+      "code": "BulkEmailSubscriptionList",
+      "label": "Bulk email subscriptions",
+      "type": "DataGrid",
+      "columns": [
+        "Bulk email type",
+        "Subscription status"
+      ]
+    },
+    {
+      "code": "CampaignList",
+      "label": "Campaigns",
+      "type": "DataGrid",
+      "columns": [
+        "Campaign",
+        "Campaign status",
+        "Start date",
+        "End date",
+        "Contact status",
+        "Current step"
+      ]
+    },
+    {
+      "code": "CareerList",
+      "label": "Job experience",
+      "type": "DataGrid",
+      "columns": [
+        "Account",
+        "Full job title",
+        "Department",
+        "Current",
+        "Start"
+      ]
+    },
+    {
+      "code": "CasesList",
+      "label": "Cases",
+      "type": "DataGrid",
+      "columns": [
+        "Number",
+        "Subject",
+        "Assignee",
+        "Status",
+        "Resolution time"
+      ]
+    },
+    {
+      "code": "EventList",
+      "label": "Events",
+      "type": "DataGrid",
+      "columns": [
+        "Event",
+        "Type",
+        "Response",
+        "End",
+        "Start"
+      ]
+    },
+    {
+      "code": "LeadList",
+      "label": "MQL/SQL",
+      "type": "DataGrid",
+      "columns": [
+        "Lead",
+        "Customer need",
+        "Lead stage",
+        "Owner",
+        "Created on"
+      ]
+    },
+    {
+      "code": "MrktLeadList",
+      "label": "MQL/SQL Create lead",
+      "type": "DataGrid",
+      "columns": [
+        "Lead",
+        "Customer need",
+        "Lead stage",
+        "Owner",
+        "Created on"
+      ]
+    },
+    {
+      "code": "OpportunityList",
+      "label": "Opportunities",
+      "type": "DataGrid",
+      "columns": [
+        "Name",
+        "Stage",
+        "Probability, %",
+        "Opportunity amount",
+        "Owner",
+        "Closed on"
+      ]
+    },
+    {
+      "code": "OrderList",
+      "label": "Orders",
+      "type": "DataGrid",
+      "columns": [
+        "Number",
+        "Status",
+        "Total, base currency",
+        "Payment type",
+        "Owner",
+        "Date"
+      ]
+    },
+    {
+      "code": "RecommendedProductList",
+      "label": "Recommended products",
+      "type": "DataGrid",
+      "columns": [
+        "Product",
+        "Price",
+        "Recommendation score",
+        "Status",
+        "Created on"
+      ]
+    },
+    {
+      "code": "ServiceAgreementsList",
+      "label": "Service agreements",
+      "type": "DataGrid",
+      "columns": [
+        "Service agreement",
+        "Status",
+        "Owner"
+      ]
+    },
+    {
+      "code": "SubmittedFormList",
+      "label": "Submissions",
+      "type": "DataGrid",
+      "columns": [
+        "Created on",
+        "Web form",
+        "Website domains",
+        "Full name",
+        "Ad campaign",
+        "Email",
+        "Phone number",
+        "Account name",
+        "Country"
+      ]
+    },
+    {
+      "code": "WebActionList",
+      "label": "Web actions",
+      "type": "DataGrid",
+      "columns": [
+        "Start date",
+        "Action type",
+        "Web page",
+        "Page URL address"
+      ]
+    },
+    {
+      "code": "WebSessionList",
+      "label": "Web sessions",
+      "type": "DataGrid",
+      "columns": [
+        "Start date",
+        "Country",
+        "City",
+        "Source",
+        "Channel",
+        "Page referrer URL",
+        "Duration, sec"
+      ]
     },
     {
       "code": "LeadConversionScore",
@@ -79,6 +452,21 @@
       "type": "Lookup"
     },
     {
+      "code": "AdCampaign",
+      "label": "Ad campaign",
+      "type": "Lookup"
+    },
+    {
+      "code": "Channel",
+      "label": "Channel",
+      "type": "Lookup"
+    },
+    {
+      "code": "CustomerNeed",
+      "label": "Customer need",
+      "type": "Lookup"
+    },
+    {
       "code": "Gender",
       "label": "Gender",
       "type": "Lookup"
@@ -94,8 +482,18 @@
       "type": "Lookup"
     },
     {
+      "code": "RegisterMethod",
+      "label": "Registration method",
+      "type": "Lookup"
+    },
+    {
       "code": "SalutationType",
       "label": "Title",
+      "type": "Lookup"
+    },
+    {
+      "code": "Source",
+      "label": "Source",
       "type": "Lookup"
     },
     {
@@ -147,6 +545,15 @@
       "code": "JobTitle",
       "label": "Full job title",
       "type": "Text"
+    },
+    {
+      "code": "CardButtonToggleGroup",
+      "label": "",
+      "type": "ToggleTab",
+      "tabs": [
+        "Feed",
+        "Attachments"
+      ]
     }
   ]
 }

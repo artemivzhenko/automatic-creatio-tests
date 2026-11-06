@@ -4,6 +4,16 @@
   "type": "FreedomUI",
   "elements": [
     {
+      "code": "AttachmentAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AttachmentRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
       "code": "BackButton",
       "label": "",
       "type": "Button"
@@ -24,6 +34,46 @@
       "type": "Button"
     },
     {
+      "code": "LeadsByCustomerAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "LeadsByCustomerRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "LeadsByCustomerSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OpportunitiesByCustomerAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OpportunitiesByCustomerRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "OpportunitiesByCustomerSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ProductsRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "ProductsSettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
       "code": "SetRecordRightsButton",
       "label": "",
       "type": "Button"
@@ -39,6 +89,16 @@
       "type": "Button"
     },
     {
+      "code": "StageHistoryRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "StageHistorySettingsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
       "code": "ProgressBar",
       "label": "",
       "type": "CasesBar",
@@ -49,9 +109,76 @@
       ]
     },
     {
+      "code": "LeadsByCustomerList",
+      "label": "Leads by customer",
+      "type": "DataGrid",
+      "columns": [
+        "Name",
+        "Customer need",
+        "Stage",
+        "Owner",
+        "Created on"
+      ]
+    },
+    {
+      "code": "OpportunitiesByCustomerList",
+      "label": "Opportunities by customer",
+      "type": "DataGrid",
+      "columns": [
+        "Name",
+        "Stage",
+        "Total contract value",
+        "Owner",
+        "Expected close date"
+      ]
+    },
+    {
+      "code": "ProductsList",
+      "label": "Products",
+      "type": "DataGrid",
+      "columns": [
+        "Product",
+        "Price"
+      ]
+    },
+    {
+      "code": "SimilarLeadList",
+      "label": "Similar leads",
+      "type": "DataGrid",
+      "columns": [
+        "Name",
+        "Stage",
+        "Created on",
+        "Owner",
+        "Account",
+        "Contact"
+      ]
+    },
+    {
+      "code": "StageHistoryList",
+      "label": "Stage history",
+      "type": "DataGrid",
+      "columns": [
+        "Stage",
+        "Start",
+        "Due",
+        "Modified by"
+      ]
+    },
+    {
+      "code": "DecisionDate",
+      "label": "Expected close date",
+      "type": "Date"
+    },
+    {
       "code": "CreatedOn",
       "label": "Created on",
       "type": "DateTime"
+    },
+    {
+      "code": "Budget",
+      "label": "Potential value",
+      "type": "Decimal"
     },
     {
       "code": "Web",
@@ -104,6 +231,11 @@
       "type": "Lookup"
     },
     {
+      "code": "Opportunity",
+      "label": "Opportunity",
+      "type": "Lookup"
+    },
+    {
       "code": "Owner",
       "label": "Owner",
       "type": "Lookup"
@@ -121,6 +253,11 @@
     {
       "code": "SalesChannel",
       "label": "Sales channel",
+      "type": "Lookup"
+    },
+    {
+      "code": "SalesOwner",
+      "label": "Opportunity owner",
       "type": "Lookup"
     },
     {
@@ -154,6 +291,11 @@
       "type": "Tab"
     },
     {
+      "code": "BusinessCase",
+      "label": "Business case",
+      "type": "Text"
+    },
+    {
       "code": "Commentary",
       "label": "Comments",
       "type": "Text"
@@ -167,6 +309,21 @@
       "code": "LeadName",
       "label": "Name",
       "type": "Text"
+    },
+    {
+      "code": "ProductSuggestions",
+      "label": "Product suggestions",
+      "type": "Text"
+    },
+    {
+      "code": "CardButtonToggleGroup",
+      "label": "",
+      "type": "ToggleTab",
+      "tabs": [
+        "Next steps",
+        "Feed",
+        "Attachments"
+      ]
     }
   ]
 }

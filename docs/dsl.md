@@ -10,7 +10,7 @@ Write one command per line. Blank lines and lines beginning with `#` are ignored
 | --- | --- | --- | --- |
 | use | `use <user>` | none | `use testUser` |
 | open | `open <page> [for <recordId>]` | none | `open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4` |
-| check | `check <code> [not] exists` \| `check <code> is [not] required\|readonly` | `IExistable`; the state forms also need `IStateAware` | `check Input_Text is required` |
+| check | `check <code> [not] exists` \| `check <code> is [not] required\|readonly\|editable` \| `check <code> columns` | `IExistable`; `required`/`readonly` need `IStateAware`, `editable` needs `IEditableAware`, `columns` needs `IColumned` | `check Input_Text is required` |
 | check-value | `check-value <code> eq|ne|gt|ge|lt|le|contains|startswith|endswith <value>` | `IValueElement` | `check-value Input_Text eq "Sample Name 123"` |
 | set | `set <code> "value" | set <code> <sourceCodeOrStaticValue>` | `IValueElement` | `set Input_Text DefInput` |
 | click | `click <code>` | `IClickable` | `click SaveButton` |
@@ -21,8 +21,41 @@ Write one command per line. Blank lines and lines beginning with `#` are ignored
 | end | `end` | none | `end` |
 | analyse | `analyse ["<page path>"] [<pageName>]` | none | `analyse "/0/Shell/#Card/Contacts_FormPage/edit/<id>" ContactForm` |
 | analyse | `analyse ["<page path>"] [<pageName>]` | none | `analyse "/0/Shell/#Card/Contacts_FormPage/edit/{id}" ContactForm` |
+| add-record | `add-record <code> set Column=Value;Column=Value` | `IRecordAddable` | `add-record AddressList set Address type=Business;Full address=Main st. 1` |
 
 `check <code> exists` also verifies that the rendered caption matches the `label` in the page file under `Configuration/pages`; required and readonly are never asserted implicitly, they are separate lines.
+
+`check <code> columns` compares the columns the element renders -- names and left-to-right order --
+with the `columns` listed for it in its page file. The expectation lives in configuration rather than
+in the script for the same reason a caption does: a column list is a property of the page, so a
+renamed column is one edit to the page file instead of one edit per case that touches the grid. A
+line whose element declares no `columns` is rejected during validation, before a browser is started:
+with nothing to compare against it could never fail.
+
+`add-record <code> set Column=Value;Column=Value` adds one record to an element that accepts one in
+place. The list is split on `;`, then each pair on its first `=`, so a value may itself contain an
+`=`; whitespace around names and values is dropped. Quoting the list is optional -- the tokens are
+joined back together -- so both of these are the same line:
+
+```
+add-record ContactList set Full name=Jon Doe;Job title=Developer
+add-record ContactList set "Full name=Jon Doe;Job title=Developer"
+```
+
+Every column named is checked against the `columns` in the page file during validation, so a
+misspelled column fails before a browser is started. Values are entered the way the cell asks for
+them: a checkbox column takes `true` or `false`, a lookup column takes the text of an offered option
+and is resolved through its autocomplete, and everything else is typed in.
+
+Not every column of an editable grid can be filled. Creatio renders some of them as links or coloured
+labels, and those stay read-only in the list whatever the grid's own setting is; naming one fails with
+`did not open for editing`. Of the rest, only the first column and checkbox columns open on a single
+click -- the others need a double click, which the framework does for you.
+
+The record is entered in place and reaches the database when the page is saved, exactly as a value
+written with `set` does -- `add-record` saves nothing on its own. Note that Creatio replaces a page's
+Close button with Save and Cancel as soon as the page has unsaved changes, so those two buttons are
+only addressable after something has changed.
 
 `analyse` describes a page and writes `Configuration/pages/<pageName>.json`: every field, button,
 tab and stage bar it can address, plus a list of controls that have no element type yet. Given an
@@ -42,7 +75,43 @@ below. The same work is available without a script as `creatio-tests analyse "<p
 | --- | --- | --- | --- |
 | Button | `crt-button` | None | `isSave`, `doubleClick`, `settleMs`, `disappearTimeoutMs`; `pinned` |
 | CasesBar | `crt-entity-stage-progress-bar` | Stage | `values`, `subvalues`; `pinned` |
+| DataGrid | `crt-data-grid` | None | `columns`; `pinned` |
+
+A `DataGrid` has two properties Creatio configures independently, the way a field has required and
+read-only: whether inline editing is on, and whether it sits inside an expansion panel. All four
+combinations occur. Inline editing is read from the row Creatio adds to the table footer for
+appending a record, which it renders only for a grid that takes edits in place; the per-cell
+editing-disabled marker says only that one column is read-only, and an editable grid with a
+calculated or image column carries plenty of those.
+
+A grid carries no caption of its own, so its `label` is the caption of the panel that holds it, and
+a grid placed directly on a page has an empty label. That label is also how the grid is reached: when
+it is not on screen, the framework brings that panel into view and opens it if it is closed. Creatio
+renders a panel's contents only once it scrolls into view, so an expanded panel further down the page
+holds nothing until something looks at it.
+
+Creatio renders tabs in two shapes, and they are opposites in the DOM. A tab panel gives every tab
+its own `element-name`, so each tab is an element of type `Tab` and `click <code>` switches to it. A
+toggle group has one `element-name` for the whole group and names the tabs inside it only by their
+captions, so the group is one element of type `ToggleTab` and the open tab is its value:
+
+```
+click GeneralInfoTab                              # a tab of a tab panel
+set ViewToggle "Tab 2"                            # a tab of a toggle group
+check-value ViewToggle eq "Tab 2"
+```
+
+The distinction is the `type` in the page file, which is also what tells `analyse` how to read the
+control. `tabs` lists the captions the group offers, in display order; a toggle group has no caption
+of its own, so its `label` is empty. `click` does not accept a `ToggleTab` and `set` does not accept
+a `Tab`: which of the two a control is decides how it is driven.
+
+`columns` lists the grid's column captions in display order, as `analyse` found them. Only the
+columns a person sees are recorded: Creatio gives every grid a leading cell for the row controls and
+a trailing cell that absorbs the free width, and both announce themselves as column headers without
+naming any data.
 | Tab | `crt-tab-panel-header-item` | None | `pinned` |
+| ToggleTab | `crt-button-toggle-group` | Tab | `tabs`; `pinned` |
 | Text | `crt-input` | Text | `pinned` |
 | RichText | `crt-rich-text-editor` | Text | `pinned` |
 | Email | `crt-email-input` | Text | `pinned` |
@@ -144,7 +213,13 @@ All paths are relative to the working directory.
 | `pages/*.json` | one file per page: `name`, `url`, optional `type`, and `elements` (`code`, `label`, `type`, optional `pinned`, plus type-specific options). The page is implied by the file, so elements never repeat it. |
 | `objects.config.json` | `objects`: `name`, `sectionPage`, `formPage`, `newButton`, `saveButton`, `fields` mapping codes to static-value names |
 | `static.values.json` | object mapping static names to scalar values |
-| `run.config.json` | `headless`, `continueOnFailure`, `runAnalysis`, `elementTimeoutMs`, `absenceTimeoutMs`, `pageLoadTimeoutMs`, `reportsDirectory`, `reports`, `skipFilePrefix` |
+| `run.config.json` | `headless`, `continueOnFailure`, `runAnalysis`, `viewportWidth`, `viewportHeight`, `elementTimeoutMs`, `absenceTimeoutMs`, `pageLoadTimeoutMs`, `reportsDirectory`, `reports`, `skipFilePrefix` |
+
+`viewportWidth` and `viewportHeight` (1600 x 950 by default) fix the size of the browser window every
+case runs in. This is part of a run's definition rather than a property of whoever's machine it runs
+on: Creatio lays a page out differently in a narrow window, to the point where a side panel's hover
+actions overlap the tab headers and a tab cannot be clicked at all, and controls further down a page
+are never rendered. Analysis uses the same size, so what it records and what a case can reach agree.
 
 ```jsonc
 // Configuration/pages/ContactForm.json -- one file per page
@@ -169,7 +244,7 @@ grouped however suits the project. The file name is only a label; a page's ident
 The first pass checks all lines before a browser action runs: unknown commands, malformed arguments, absent pages/elements, unsupported capabilities, incompatible copies, invalid literals, and object workflow references.
 
 ```text
-Unknown command 'opne'. Known commands: analyse, check, check-value, click, clear, create, end, goto, open, set, use, wait.
+Unknown command 'opne'. Known commands: add-record, analyse, check, check-value, click, clear, create, end, goto, open, set, use, wait.
 Element 'X' has unknown type 'Slider'. Known types: Boolean, Button, CasesBar, Date, DateTime, Decimal, Email, Integer, Link, Lookup, Phone, RichText, Tab, Text, Time.
 'wait' expects the unit 'second' or 'minute'.
 ```

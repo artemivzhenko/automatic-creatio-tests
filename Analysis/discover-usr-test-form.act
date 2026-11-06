@@ -1,0 +1,8 @@
+# Analysis script, not a test. It describes the field-coverage page and writes
+# Configuration/pages/UsrTestForm.json.
+#
+# This page carries one control of every supported kind, plus the three grid variants Creatio can
+# render, which is what makes it the page the framework is regression-tested against.
+
+use Supervisor
+analyse "/0/Shell/#Page/UsrTest_FormPage/edit/71d27c81-3d6b-41d9-9a39-c408c96173b6" UsrTestForm

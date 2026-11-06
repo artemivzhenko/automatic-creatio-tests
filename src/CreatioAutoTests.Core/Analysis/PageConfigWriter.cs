@@ -26,7 +26,9 @@ public sealed class PageConfigWriter
         // Page files are hand-edited, so they match the camelCase of every other config file.
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        // Omits pinned:false on every entry. A string's default is null rather than empty,
+        // so a deliberately blank label still survives.
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault,
     };
 
     private readonly ILogger<PageConfigWriter> _logger;
@@ -106,12 +108,29 @@ public sealed class PageConfigWriter
             Type = element.Type,
         };
 
+        // Type-specific findings travel as extra members, bound to the element's options class when
+        // the catalog builds it. Anything absent stays absent: an empty array in a page file would
+        // read as a deliberate expectation of nothing.
+        var extra = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase);
+
         if (element.Stages is { Count: > 0 })
         {
-            definition.Extra = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["values"] = JsonSerializer.SerializeToElement(element.Stages),
-            };
+            extra["values"] = JsonSerializer.SerializeToElement(element.Stages);
+        }
+
+        if (element.Columns is { Count: > 0 })
+        {
+            extra["columns"] = JsonSerializer.SerializeToElement(element.Columns);
+        }
+
+        if (element.Tabs is { Count: > 0 })
+        {
+            extra["tabs"] = JsonSerializer.SerializeToElement(element.Tabs);
+        }
+
+        if (extra.Count > 0)
+        {
+            definition.Extra = extra;
         }
 
         return definition;

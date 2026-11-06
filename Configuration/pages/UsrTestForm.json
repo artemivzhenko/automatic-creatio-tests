@@ -6,212 +6,323 @@
     {
       "code": "Checkbox_5e8hmzp",
       "label": "Checkbox 1",
-      "type": "Boolean",
-      "pinned": false
+      "type": "Boolean"
     },
     {
       "code": "Checkbox_btqjr3l",
       "label": "Checkbox 2",
-      "type": "Boolean",
-      "pinned": false
+      "type": "Boolean"
+    },
+    {
+      "code": "AttachmentAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AttachmentRefreshButton",
+      "label": "",
+      "type": "Button"
     },
     {
       "code": "BackButton",
       "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "Button_65solmp",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "Button_o93puvc",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "Button_xqmg45y",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CancelButton",
+      "label": "Cancel",
       "type": "Button",
-      "pinned": false
+      "pinned": true
     },
     {
       "code": "CloseButton",
       "label": "Close",
+      "type": "Button"
+    },
+    {
+      "code": "GridDetailAddBtn_dgsbbl1",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "GridDetailRefreshBtn_3n1hatp",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "GridDetailSettingsBtn_z1fc0wz",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "SaveButton",
+      "label": "Save",
       "type": "Button",
-      "pinned": false
+      "pinned": true,
+      "isSave": true,
+      "disappearTimeoutMs": 15000,
+      "settleMs": 2500
     },
     {
       "code": "SetRecordRightsButton",
       "label": "",
-      "type": "Button",
-      "pinned": false
+      "type": "Button"
+    },
+    {
+      "code": "DataGrid_0qy3003",
+      "label": "",
+      "type": "DataGrid",
+      "columns": [
+        "Full name",
+        "Customer need",
+        "Channel",
+        "Address",
+        "IsEmailConfirmed",
+        "Job title",
+        "Source",
+        "Recipient's name",
+        "Photo",
+        "Type"
+      ]
+    },
+    {
+      "code": "DataGrid_cfoe0pp",
+      "label": "Contact Expanded editable",
+      "type": "DataGrid",
+      "columns": [
+        "First name",
+        "Last name",
+        "Middle name",
+        "City",
+        "Country",
+        "Mobile phone",
+        "Type",
+        "Gender"
+      ]
+    },
+    {
+      "code": "DataGrid_dl8no34",
+      "label": "",
+      "type": "DataGrid",
+      "columns": [
+        "Full name",
+        "Do not use phone",
+        "First name",
+        "Photo",
+        "State/province",
+        "Type",
+        "Role",
+        "Skype",
+        "Recipient's name",
+        "Invalid email",
+        "Last name",
+        "Middle name",
+        "Department",
+        "Confirmed",
+        "Country",
+        "Created by",
+        "Business phone",
+        "Birth date",
+        "Address type",
+        "Ad campaign"
+      ]
+    },
+    {
+      "code": "GridDetail_ec8uysl",
+      "label": "Contact Expanded non editable",
+      "type": "DataGrid",
+      "columns": [
+        "Full name",
+        "Age",
+        "Birth date",
+        "Business phone",
+        "Country",
+        "Account",
+        "Department"
+      ]
     },
     {
       "code": "DateTimePicker_0iwfjnv",
       "label": "Date only",
-      "type": "Date",
-      "pinned": false
+      "type": "Date"
     },
     {
       "code": "DateTimePicker_7oux2pm",
       "label": "Modified on",
-      "type": "DateTime",
-      "pinned": false
+      "type": "DateTime"
     },
     {
       "code": "DateTimePicker_8oyqn4q",
       "label": "Created on",
-      "type": "DateTime",
-      "pinned": false
+      "type": "DateTime"
     },
     {
       "code": "DateTimePicker_q04aqpj",
       "label": "Date/Time 1",
-      "type": "DateTime",
-      "pinned": false
+      "type": "DateTime"
     },
     {
       "code": "DateTimePicker_unl0hhd",
       "label": "Date/Time 2",
-      "type": "DateTime",
-      "pinned": false
+      "type": "DateTime"
     },
     {
       "code": "NumberInput_eh33mgn",
       "label": "Decimal 4",
-      "type": "Decimal",
-      "pinned": false
+      "type": "Decimal"
     },
     {
       "code": "EmailInput_klsvjuk",
       "label": "Email address 1",
-      "type": "Email",
-      "pinned": false
+      "type": "Email"
     },
     {
       "code": "Input_9hckvrf",
       "label": "Mail",
-      "type": "Email",
-      "pinned": false
+      "type": "Email"
     },
     {
       "code": "NumberInput_b46wkz1",
       "label": "Number 3",
-      "type": "Integer",
-      "pinned": false
+      "type": "Integer"
     },
     {
       "code": "NumberInput_gyp6371",
       "label": "Number 1",
-      "type": "Integer",
-      "pinned": false
+      "type": "Integer"
     },
     {
       "code": "NumberInput_llhohxl",
       "label": "Number 2",
-      "type": "Integer",
-      "pinned": false
+      "type": "Integer"
     },
     {
       "code": "WebInput_ikfkj4q",
       "label": "Web link 1",
-      "type": "Link",
-      "pinned": false
+      "type": "Link"
     },
     {
       "code": "WebInput_pd89phi",
       "label": "Web link 2",
-      "type": "Link",
-      "pinned": false
+      "type": "Link"
     },
     {
       "code": "WebInput_uam3xyi",
       "label": "Web link 3",
-      "type": "Link",
-      "pinned": false
+      "type": "Link"
     },
     {
       "code": "ComboBox_dtmdaiz",
       "label": "Modified by",
-      "type": "Lookup",
-      "pinned": false
+      "type": "Lookup"
     },
     {
       "code": "ComboBox_hvtl4mk",
       "label": "Created by",
-      "type": "Lookup",
-      "pinned": false
+      "type": "Lookup"
     },
     {
       "code": "ComboBox_qzxxx5d",
       "label": "Dropdown 1",
-      "type": "Lookup",
-      "pinned": false
+      "type": "Lookup"
     },
     {
       "code": "Input_71se6kv",
       "label": "Phone",
-      "type": "Phone",
-      "pinned": false
+      "type": "Phone"
     },
     {
       "code": "PhoneInput_stypcxk",
       "label": "Phone number 1",
-      "type": "Phone",
-      "pinned": false
+      "type": "Phone"
     },
     {
       "code": "RichTextEditor_cmum0ek",
       "label": "Rich text 2",
-      "type": "RichText",
-      "pinned": false
+      "type": "RichText"
     },
     {
       "code": "RichTextEditor_xnaolfg",
       "label": "Rich text 1",
-      "type": "RichText",
-      "pinned": false
+      "type": "RichText"
     },
     {
       "code": "GeneralInfoTab",
       "label": "General information",
-      "type": "Tab",
-      "pinned": false
+      "type": "Tab"
     },
     {
       "code": "TabContainer_f7m50h9",
       "label": "numbers",
-      "type": "Tab",
-      "pinned": false
+      "type": "Tab"
     },
     {
       "code": "TabContainer_qtw0r0n",
       "label": "datetimes",
-      "type": "Tab",
-      "pinned": false
+      "type": "Tab"
     },
     {
       "code": "Input_gfu1cih",
       "label": "Text 2",
-      "type": "Text",
-      "pinned": false
+      "type": "Text"
     },
     {
       "code": "Input_lkwigkv",
       "label": "Text 1",
-      "type": "Text",
-      "pinned": false
+      "type": "Text"
     },
     {
       "code": "Input_s7d8yhu",
       "label": "Text 3",
-      "type": "Text",
-      "pinned": false
+      "type": "Text"
     },
     {
       "code": "UsrName",
       "label": "Name",
-      "type": "Text",
-      "pinned": false
+      "type": "Text"
     },
     {
       "code": "DateTimePicker_lxw1cge",
       "label": "Time 2",
-      "type": "Time",
-      "pinned": false
+      "type": "Time"
     },
     {
       "code": "DateTimePicker_p027lhn",
       "label": "Time only",
-      "type": "Time",
-      "pinned": false
+      "type": "Time"
+    },
+    {
+      "code": "ButtonToggleGroup_dqmg1ty",
+      "label": "",
+      "type": "ToggleTab",
+      "tabs": [
+        "Tab 1",
+        "Tab 2"
+      ]
+    },
+    {
+      "code": "CardButtonToggleGroup",
+      "label": "",
+      "type": "ToggleTab",
+      "tabs": [
+        "Feed",
+        "Attachments"
+      ]
     }
   ]
 }

@@ -48,6 +48,10 @@ check-value Checkbox_5e8hmzp eq "false"
 # ---------- Lookup ----------
 clear ComboBox_qzxxx5d
 check-value ComboBox_qzxxx5d eq ""
+set ComboBox_qzxxx5d "Andrew Baker(sample)"
+check-value ComboBox_qzxxx5d eq "Andrew Baker(sample)"
+clear ComboBox_qzxxx5d
+check-value ComboBox_qzxxx5d eq ""
 
 # ---------- copying one field into another ----------
 set Input_s7d8yhu "copied value"
@@ -96,6 +100,10 @@ check-value DateTimePicker_unl0hhd eq "2025-11-30T07:35:00"
 check-value DateTimePicker_unl0hhd gt "2020-01-01T00:00:00"
 check-value DateTimePicker_unl0hhd lt "2030-01-01T00:00:00"
 
+# The rest of the date controls sit behind the second tab of a toggle group. A toggle group is one
+# element whose value is the open tab, so switching is a 'set' rather than a 'click'.
+set ButtonToggleGroup_dqmg1ty "Tab 2"
+
 # Date only: the control stores no time, so the time is normalised away on the way back.
 set DateTimePicker_0iwfjnv "2025-11-30T15:30:00"
 check-value DateTimePicker_0iwfjnv eq "2025-11-30T00:00:00"
@@ -110,6 +118,10 @@ check-value DateTimePicker_lxw1cge eq "0001-01-01T20:45:00"
 check DateTimePicker_lxw1cge is required
 
 check DateTimePicker_7oux2pm is readonly
+
+# Back to the first tab of the group for the two read-only controls that live there.
+set ButtonToggleGroup_dqmg1ty "Tab 1"
+
 check DateTimePicker_8oyqn4q is readonly
 check DateTimePicker_q04aqpj is readonly
 

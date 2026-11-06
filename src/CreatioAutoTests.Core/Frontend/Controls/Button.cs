@@ -97,9 +97,12 @@ public sealed class Button : UiElementBase, IClickable
 
         try
         {
+            // Hidden rather than detached: some pages remove the Save button from the DOM once the
+            // record is stored, others keep the host and collapse it. Waiting for removal reports a
+            // save that plainly worked as a failure on every page of the second kind.
             await Root.WaitForAsync(new LocatorWaitForOptions
             {
-                State = WaitForSelectorState.Detached,
+                State = WaitForSelectorState.Hidden,
                 Timeout = _options.DisappearTimeoutMs
             }).ConfigureAwait(false);
 
@@ -116,7 +119,7 @@ public sealed class Button : UiElementBase, IClickable
         }
 
         throw new InvalidOperationException(
-            "Save button '" + Code + "' was still on the page after " + _options.DisappearTimeoutMs +
+            "Save button '" + Code + "' was still showing after " + _options.DisappearTimeoutMs +
             " ms and no error was shown; the record was probably not saved.");
     }
 

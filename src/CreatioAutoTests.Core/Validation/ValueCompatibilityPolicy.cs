@@ -16,13 +16,14 @@ public sealed class ValueCompatibilityPolicy
         [ValueKind.Text] = new[]
         {
             ValueKind.Text, ValueKind.Number, ValueKind.Boolean,
-            ValueKind.DateTime, ValueKind.Lookup, ValueKind.Stage
+            ValueKind.DateTime, ValueKind.Lookup, ValueKind.Stage, ValueKind.Tab
         },
         [ValueKind.Number] = new[] { ValueKind.Number },
         [ValueKind.Boolean] = new[] { ValueKind.Boolean },
         [ValueKind.DateTime] = new[] { ValueKind.DateTime },
         [ValueKind.Lookup] = new[] { ValueKind.Text, ValueKind.Lookup },
-        [ValueKind.Stage] = new[] { ValueKind.Text, ValueKind.Lookup, ValueKind.Stage }
+        [ValueKind.Stage] = new[] { ValueKind.Text, ValueKind.Lookup, ValueKind.Stage },
+        [ValueKind.Tab] = new[] { ValueKind.Text, ValueKind.Lookup, ValueKind.Tab }
     };
 
     /// <summary>Checks 'set target source' where both sides are elements.</summary>
@@ -109,6 +110,15 @@ public sealed class ValueCompatibilityPolicy
                 }
 
                 error = "a stage bar needs the name of the stage to switch to";
+                return false;
+
+            case ValueKind.Tab:
+                if (text.Length > 0)
+                {
+                    return true;
+                }
+
+                error = "a toggle tab group needs the caption of the tab to open";
                 return false;
 
             default:

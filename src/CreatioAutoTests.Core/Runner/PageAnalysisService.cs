@@ -61,7 +61,11 @@ public sealed class PageAnalysisService
         }).ConfigureAwait(false);
 
         await using var pool = new BrowserSessionPool(
-            browser, _authenticator, _loggerFactory.CreateLogger<BrowserSessionPool>());
+            browser,
+            _authenticator,
+            _loggerFactory.CreateLogger<BrowserSessionPool>(),
+            _configuration.RunSettings.ViewportWidth,
+            _configuration.RunSettings.ViewportHeight);
 
         var context = await pool.GetContextAsync(username, cancellationToken).ConfigureAwait(false);
         var page = await context.NewPageAsync().ConfigureAwait(false);

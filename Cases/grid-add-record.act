@@ -1,0 +1,30 @@
+# Adding a record to an editable grid.
+#
+# The row is entered in place: the framework opens it, then fills each named column. Whether it
+# reaches the database follows the page's own save, the same way a value written with 'set' does.
+#
+# The column names come from the page file, so a typo in one of them fails during validation,
+# before a browser is started.
+
+use Supervisor
+open UsrTestForm for 71d27c81-3d6b-41d9-9a39-c408c96173b6
+
+# Creatio reopens a page on the tab it was last left on, so the tab is stated rather than assumed.
+click GeneralInfoTab
+
+# The page has a required field of its own; it has to hold something before Creatio will save.
+set RichTextEditor_xnaolfg "Filled by the add-record case"
+
+check DataGrid_0qy3003 is editable
+
+# One column of each kind the grid offers: plain text, a checkbox, and a lookup resolved through
+# its autocomplete. Not every column of an editable grid can be filled -- Creatio renders some of
+# them as links or coloured labels, and those are read-only in the list whatever the grid's setting.
+add-record DataGrid_0qy3003 set Full name=Multi Column Row;Address=Main street 1;Recipient's name=Mr Jon;IsEmailConfirmed=true;Job title=Developer
+
+# Creatio swaps Close for Save/Cancel as soon as the page has unsaved changes, so neither button
+# exists until a row has been added.
+#
+# The case cancels rather than saves, so that running the suite twice leaves the same page behind.
+# Replacing this line with 'click SaveButton' is what commits the row to the database.
+click CancelButton

@@ -4,6 +4,10 @@
 use Supervisor
 open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4
 
+# Creatio reopens a page on the tab it was last left on, so the tab this case reads is stated
+# rather than inherited from whatever ran before it.
+click GeneralInfoTab
+
 check AddressAddButton exists
 check AddressRefreshButton exists
 check AddressSettingsButton exists

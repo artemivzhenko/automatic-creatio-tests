@@ -41,3 +41,4 @@ Configuration/creatio.env.config.json
 ai_helpers/*
 backlog/*
 copilot/*
+internal_docs/*

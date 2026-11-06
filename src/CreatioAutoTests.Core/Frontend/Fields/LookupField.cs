@@ -10,7 +10,14 @@ namespace CreatioAutoTests.Frontend.Fields;
 [UiElement("Lookup", HostTag = "crt-combobox", ValueKind = ValueKind.Lookup)]
 public sealed class LookupField : FieldElementBase, INavigableToRecord
 {
-    private const string PanelSelector = "div.mat-autocomplete-panel.mat-autocomplete-visible";
+    /// <summary>
+    /// The autocomplete panel. Creatio 8.3 renders it through Material MDC as
+    /// <c>mat-mdc-autocomplete-panel</c>; older builds used
+    /// <c>mat-autocomplete-panel.mat-autocomplete-visible</c>. Matching only one is silent: the
+    /// value is typed, the panel never resolves, and the wait runs out.
+    /// </summary>
+    internal const string PanelSelector =
+        "div.mat-mdc-autocomplete-panel, div.mat-autocomplete-panel.mat-autocomplete-visible";
     private const string LinkSelector = ".link-wrap a.crt-link";
     private const int OptionResolveTimeoutMs = 5000;
     private const int OptionPollIntervalMs = 100;

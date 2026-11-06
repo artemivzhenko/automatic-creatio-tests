@@ -8,7 +8,8 @@ public sealed record UiElementRegistration(
     Type ImplementationType,
     ValueKind ValueKind,
     string HostTag,
-    Type? OptionsType)
+    Type? OptionsType,
+    bool LabeledByPanel = false)
 {
     /// <summary>Capability interfaces the implementation offers, used by command validation.</summary>
     public IReadOnlyList<Type> Capabilities { get; } = ImplementationType
@@ -107,7 +108,8 @@ public sealed class UiElementRegistry
             type,
             attribute.ValueKind,
             attribute.HostTag,
-            attribute.Options);
+            attribute.Options,
+            attribute.LabeledByPanel);
     }
 
     private static IEnumerable<Type> SafeGetTypes(Assembly assembly)

@@ -95,7 +95,9 @@ public enum ValueKind
     /// <summary>A displayed reference to another Creatio record.</summary>
     Lookup = 5,
     /// <summary>The selected stage of a progress bar.</summary>
-    Stage = 6
+    Stage = 6,
+    /// <summary>The open tab of a toggle tab group.</summary>
+    Tab = 7
 }
 
 /// <summary>The element renders a link to another record and can follow it. Used by 'goto'.</summary>
@@ -103,4 +105,53 @@ public interface INavigableToRecord : IUiElement
 {
     /// <summary>Follows the linked record for the <c>goto</c> command.</summary>
     Task NavigateToRecordAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// The element can report whether it accepts inline editing.
+///
+/// Distinct from <see cref="IStateAware"/>: read-only is a property of a field's value, while
+/// editability is a property of a grid as a whole, configured independently of whether the grid sits
+/// inside an expansion panel. Used by <c>check X is [not] editable</c>.
+/// </summary>
+public interface IEditableAware : IUiElement
+{
+    /// <summary>Reads whether inline editing is switched on for this element.</summary>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    Task<bool> IsEditableAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// The element renders named columns whose captions and order a test can assert.
+///
+/// The expectation lives in configuration rather than in the script, the same way a caption does:
+/// a column list is a property of the page, and repeating it in every case that touches the grid
+/// would make a renamed column a change in many files instead of one.
+/// Used by <c>check X columns</c>.
+/// </summary>
+public interface IColumned : IUiElement
+{
+    /// <summary>Column captions declared in configuration, in the expected left-to-right order.</summary>
+    IReadOnlyList<string> ExpectedColumns { get; }
+
+    /// <summary>Reads the column captions the element currently renders, in display order.</summary>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    Task<IReadOnlyList<string>> GetColumnsAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// The element can gain a new record from inside the page, without navigating away.
+///
+/// A Creatio grid that allows inline editing adds a row in place and takes its values cell by cell,
+/// which is what <c>add-record</c> drives. Whether the row then reaches the database follows the
+/// page's own save, exactly as it does for a value written with <c>set</c>.
+/// </summary>
+public interface IRecordAddable : IUiElement
+{
+    /// <summary>Adds one record and fills the named columns.</summary>
+    /// <param name="assignments">Columns to fill, in the order they should be entered.</param>
+    /// <param name="cancellationToken">Cancels the addition.</param>
+    Task AddRecordAsync(
+        IReadOnlyList<Execution.RecordAssignment> assignments,
+        CancellationToken cancellationToken = default);
 }

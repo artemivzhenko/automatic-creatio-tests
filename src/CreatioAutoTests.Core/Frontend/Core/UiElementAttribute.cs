@@ -36,6 +36,16 @@ public sealed class UiElementAttribute : Attribute
     public ValueKind ValueKind { get; set; } = ValueKind.None;
 
     /// <summary>
+    /// Declares that the element has no caption of its own and is named by the expansion panel it
+    /// sits in.
+    ///
+    /// True for a grid, false for everything else -- including the buttons in a grid's own toolbar,
+    /// which sit in the same panel and would otherwise all be recorded under the panel's caption.
+    /// Declared here so page analysis stays a generic walk over the registry.
+    /// </summary>
+    public bool LabeledByPanel { get; set; }
+
+    /// <summary>
     /// Optional options class the element's extra JSON members are bound to.
     /// Declaring it lets the configuration loader reject unknown members at load time.
     /// </summary>

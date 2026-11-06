@@ -12,6 +12,19 @@ public sealed class RunSettings
     /// </summary>
     public bool ContinueOnFailure { get; set; }
 
+    /// <summary>
+    /// Width of the browser window every case runs in, pixels.
+    ///
+    /// Fixed rather than left to the machine, because Creatio's layout depends on it: in a narrow
+    /// window a side panel's hover actions come to overlap the tab headers and a tab cannot be
+    /// clicked at all, and controls further down the page are never rendered. A run that varies with
+    /// the size of somebody's desktop is not a test.
+    /// </summary>
+    public int ViewportWidth { get; set; } = 1600;
+
+    /// <summary>Height of the browser window every case runs in, pixels.</summary>
+    public int ViewportHeight { get; set; } = 950;
+
     /// <summary>Timeout for locating a single UI element, milliseconds.</summary>
     public int ElementTimeoutMs { get; set; } = 15_000;
 

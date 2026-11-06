@@ -10,12 +10,14 @@ namespace CreatioAutoTests.Commands;
 ///   check X not exists      - X is absent
 ///   check X is [not] required
 ///   check X is [not] readonly
+///   check X is [not] editable
+///   check X columns         - the grid renders exactly the configured columns, in that order
 /// Presence deliberately does not assert required or readonly: those are separate, explicit lines.
 /// </summary>
 [Command("check",
     Validator = typeof(StateCheckValidator),
     SupportedTargets = new[] { typeof(IExistable) },
-    Usage = "check <code> [not] exists | check <code> is [not] required|readonly")]
+    Usage = "check <code> [not] exists | check <code> is [not] required|readonly|editable | check <code> columns")]
 public sealed class CheckCommand : ICommand
 {
     /// <summary>Asserts validated presence, absence, required, or readonly state on the target.</summary>
@@ -39,6 +41,10 @@ public sealed class CheckCommand : ICommand
                     throw new CommandFailedException("'" + element.Code + "' is on the page but was expected to be absent.");
                 }
 
+                return;
+
+            case ["columns"]:
+                await AssertColumnsAsync(context, cancellationToken).ConfigureAwait(false);
                 return;
 
             case ["is", var property]:
@@ -86,6 +92,44 @@ public sealed class CheckCommand : ICommand
         }
     }
 
+    /// <summary>
+    /// Compares rendered columns with the configured ones, order included.
+    ///
+    /// The message names the first position that differs rather than only reporting a mismatch:
+    /// two columns swapped and a column renamed look identical in a bare pass/fail, and they are
+    /// entirely different page changes.
+    /// </summary>
+    private static async Task AssertColumnsAsync(CommandContext context, CancellationToken cancellationToken)
+    {
+        var grid = context.Target<IColumned>();
+        var expected = grid.ExpectedColumns;
+        var actual = await grid.GetColumnsAsync(cancellationToken).ConfigureAwait(false);
+
+        for (var i = 0; i < Math.Min(expected.Count, actual.Count); i++)
+        {
+            if (!string.Equals(
+                    UiElementBase.NormalizeLabel(actual[i]),
+                    UiElementBase.NormalizeLabel(expected[i]),
+                    StringComparison.Ordinal))
+            {
+                throw new CommandFailedException(
+                    "'" + grid.Code + "' has '" + actual[i] + "' in column " + (i + 1) +
+                    " but the configuration expects '" + expected[i] + "'. Columns are [" +
+                    Describe(actual) + "], expected [" + Describe(expected) + "].");
+            }
+        }
+
+        if (expected.Count != actual.Count)
+        {
+            throw new CommandFailedException(
+                "'" + grid.Code + "' renders " + actual.Count + " column(s) but the configuration expects " +
+                expected.Count + ". Columns are [" + Describe(actual) + "], expected [" + Describe(expected) + "].");
+        }
+    }
+
+    private static string Describe(IReadOnlyList<string> columns) =>
+        columns.Count == 0 ? string.Empty : string.Join(", ", columns.Select(c => "'" + c + "'"));
+
     private static async Task AssertStateAsync(
         CommandContext context,
         IExistable element,
@@ -93,11 +137,16 @@ public sealed class CheckCommand : ICommand
         bool expected,
         CancellationToken cancellationToken)
     {
-        var stateAware = context.Target<IStateAware>();
-
-        var actual = property == "required"
-            ? await stateAware.IsRequiredAsync(cancellationToken).ConfigureAwait(false)
-            : await stateAware.IsReadOnlyAsync(cancellationToken).ConfigureAwait(false);
+        var actual = property switch
+        {
+            "required" => await context.Target<IStateAware>()
+                .IsRequiredAsync(cancellationToken).ConfigureAwait(false),
+            "readonly" => await context.Target<IStateAware>()
+                .IsReadOnlyAsync(cancellationToken).ConfigureAwait(false),
+            "editable" => await context.Target<IEditableAware>()
+                .IsEditableAsync(cancellationToken).ConfigureAwait(false),
+            _ => throw new CommandFailedException("Unknown property '" + property + "'."),
+        };
 
         if (actual != expected)
         {

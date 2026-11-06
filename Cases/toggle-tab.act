@@ -1,0 +1,38 @@
+# Toggle tabs.
+#
+# The same idea as an ordinary tab to a person, and the opposite of one in the DOM. A tab panel gives
+# every tab its own element-name, so each tab is an element and 'click' switches it. A toggle group
+# has one element-name for the whole group and names the tabs inside it only by their captions, so
+# the group is the element and the open tab is its value.
+#
+# That is why these lines use 'set' and 'check-value' rather than 'click': no new command was needed,
+# only a new element type.
+
+use Supervisor
+open UsrTestForm for 71d27c81-3d6b-41d9-9a39-c408c96173b6
+
+# The group lives on this tab, and Creatio reopens a page on the tab it was last left on.
+click TabContainer_qtw0r0n
+
+check ButtonToggleGroup_dqmg1ty exists
+
+set ButtonToggleGroup_dqmg1ty "Tab 2"
+check-value ButtonToggleGroup_dqmg1ty eq "Tab 2"
+
+set ButtonToggleGroup_dqmg1ty "Tab 1"
+check-value ButtonToggleGroup_dqmg1ty eq "Tab 1"
+
+# The Feed/Attachments toggle Creatio puts on every page is the same kind of control, so it is
+# addressed the same way and needed no configuration of its own beyond analysis.
+#
+# Creatio marks a tab as selected only after it has been clicked, so a freshly opened group reports
+# no open tab at all and the first switch cannot be asserted. Switching twice makes the second one a
+# real change whichever tab the group started on.
+check CardButtonToggleGroup exists
+set CardButtonToggleGroup "Attachments"
+
+set CardButtonToggleGroup "Feed"
+check-value CardButtonToggleGroup eq "Feed"
+
+# Left on the tab the rest of the suite expects to find the page on.
+click GeneralInfoTab

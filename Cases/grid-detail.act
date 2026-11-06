@@ -1,0 +1,28 @@
+# Data grids. Editability and placement in an expansion panel are two independent properties, so all
+# four combinations exist.
+#
+# A grid has no caption of its own, so its configured label is the caption of the panel that holds
+# it. That label is how the grid is found: the framework opens that panel when the grid is not on
+# screen yet, and 'check exists' compares the panel caption the same way it compares a field label.
+
+use Supervisor
+open UsrTestForm for 71d27c81-3d6b-41d9-9a39-c408c96173b6
+
+click GeneralInfoTab
+
+# Directly on the page, no panel, inline editing on.
+check DataGrid_0qy3003 exists
+check DataGrid_0qy3003 is editable
+
+# In a panel captioned "Contact Expanded non editable", inline editing off.
+check GridDetail_ec8uysl exists
+check GridDetail_ec8uysl is not editable
+
+# In a panel captioned "Contact Expanded editable", inline editing on.
+check DataGrid_cfoe0pp exists
+check DataGrid_cfoe0pp is editable
+
+# Columns are read from the page file, so the assertion covers both the names and their order.
+check DataGrid_0qy3003 columns
+check GridDetail_ec8uysl columns
+check DataGrid_cfoe0pp columns

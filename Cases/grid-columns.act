@@ -1,0 +1,26 @@
+# Column order on a real page.
+#
+# The expected columns live in Configuration/pages/ContactForm.json rather than in this script: a
+# column list is a property of the page, so a renamed or reordered column is one edit to the page
+# file instead of one edit per case that touches the grid.
+#
+# These grids sit in expansion panels far down the page. Creatio fills a panel only once it scrolls
+# into view, so reaching them is the framework's job, not the script's: 'check' opens and scrolls to
+# the panel named by the grid's label before it reads anything.
+
+use Supervisor
+open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4
+
+# Creatio reopens a page on the tab it was last left on, so the tab is stated rather than assumed.
+click GeneralInfoTab
+
+check AddressList exists
+check AddressList columns
+
+check CareerList exists
+check CareerList columns
+
+# On another tab, to show that reaching a grid is the framework's job wherever it lives.
+click ServiceTab
+check CasesList exists
+check CasesList columns

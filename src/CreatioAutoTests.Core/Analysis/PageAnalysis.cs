@@ -10,6 +10,8 @@ public sealed record DiscoveredElement(
     bool ReadOnly,
     bool Visible,
     IReadOnlyList<string>? Stages,
+    IReadOnlyList<string>? Columns,
+    IReadOnlyList<string>? Tabs,
     string? Uncertainty,
     bool TypeUndecidable);
 

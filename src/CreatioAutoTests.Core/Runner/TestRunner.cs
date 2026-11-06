@@ -147,7 +147,11 @@ public sealed class TestRunner
         }).ConfigureAwait(false);
 
         await using var pool = new BrowserSessionPool(
-            browser, _authenticator, _loggerFactory.CreateLogger<BrowserSessionPool>());
+            browser,
+            _authenticator,
+            _loggerFactory.CreateLogger<BrowserSessionPool>(),
+            _configuration.RunSettings.ViewportWidth,
+            _configuration.RunSettings.ViewportHeight);
 
         if (analysisFiles.Count > 0)
         {

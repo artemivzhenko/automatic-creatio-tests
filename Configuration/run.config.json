@@ -5,5 +5,7 @@
   "pageLoadTimeoutMs": 60000,
   "reportsDirectory": "Reports",
   "skipFilePrefix": "tmp",
-  "runAnalysis": false
+  "runAnalysis": false,
+  "viewportWidth": 1600,
+  "viewportHeight": 950
 }
