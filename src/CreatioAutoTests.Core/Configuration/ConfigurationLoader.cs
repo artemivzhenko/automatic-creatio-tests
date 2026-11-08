@@ -117,6 +117,43 @@ public sealed class ConfigurationLoader
         return pages;
     }
 
+    /// <summary>
+    /// Reads every process file from a directory, one process per file. The directory is optional:
+    /// a project without process cases has none.
+    /// </summary>
+    public IReadOnlyList<ProcessDefinition> LoadProcesses(string relativeDirectory)
+    {
+        var directory = Resolve(relativeDirectory);
+        if (!Directory.Exists(directory))
+        {
+            return Array.Empty<ProcessDefinition>();
+        }
+
+        var processes = new List<ProcessDefinition>();
+        foreach (var file in Directory.GetFiles(directory, "*.json", SearchOption.AllDirectories).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+        {
+            ProcessDefinition process;
+            try
+            {
+                process = JsonSerializer.Deserialize<ProcessDefinition>(File.ReadAllText(file), SerializerOptions)
+                          ?? throw new InvalidOperationException("Process file '" + file + "' deserialized to null.");
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidOperationException("Process file '" + file + "' is not valid JSON: " + ex.Message, ex);
+            }
+
+            if (string.IsNullOrWhiteSpace(process.Name))
+            {
+                throw new InvalidOperationException("Process file '" + file + "' has no name.");
+            }
+
+            processes.Add(process);
+        }
+
+        return processes;
+    }
+
     /// <summary>Reads static.values.json, flattening every JSON scalar into a string.</summary>
     public IReadOnlyDictionary<string, string> LoadStaticValues(string relativePath)
     {

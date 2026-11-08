@@ -36,6 +36,13 @@ public sealed class ValidationContext
     /// <summary>Page the script has open at the command being validated. Null before the first 'open'.</summary>
     public string? CurrentPage { get; internal set; }
 
+    /// <summary>Processes a script may start, keyed by schema name. Empty when the processes directory is absent.</summary>
+    public IReadOnlyDictionary<string, ProcessDefinition> Processes { get; init; } =
+        new Dictionary<string, ProcessDefinition>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Process the script last started at the command being validated. Null before the first 'start'.</summary>
+    public string? CurrentProcess { get; internal set; }
+
     /// <summary>Whether a 'use' has been seen already.</summary>
     public bool UserDeclared { get; internal set; }
 

@@ -20,6 +20,12 @@ public sealed class EnvironmentConfig
     /// configuration. They run before the test cases, and only when analysis is asked for.
     /// </summary>
     public List<string> AnalysisFolders { get; set; } = new();
+
+    /// <summary>
+    /// Folders scanned for process cases: scripts that start processes and read their results and
+    /// side effects without a browser. They run after the UI cases. Defaults to ProcessCases.
+    /// </summary>
+    public List<string> ProcessCasesFolders { get; set; } = new();
 }
 
 /// <summary>Login and password of a single Creatio user.</summary>
@@ -44,6 +50,6 @@ public sealed class SiteConfig
     /// <summary>Optional site-relative OData service root.</summary>
     public string? ODataBasePath { get; set; }
 
-    /// <summary>Optional site-relative endpoint for starting a process.</summary>
+    /// <summary>Optional site-relative endpoint for starting a process; defaults to ProcessEngineService.svc/RunProcess.</summary>
     public string? ProcessStartPath { get; set; }
 }

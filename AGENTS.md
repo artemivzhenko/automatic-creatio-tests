@@ -121,7 +121,9 @@ only failure the runner reports as a failed test rather than a broken run.
 | `src/CreatioAutoTests.Cli` | the runner: run cases, `analyse` a page, or list `schemas` |
 | `tests/` | unit tests, no browser |
 | `Cases/`, `Analysis/` | `.act` scripts: test cases, and scripts that describe pages |
+| `ProcessCases/` | `.act` scripts of the backend tier: `start` a process, `check-result`, `check-record`; no browser |
 | `Configuration/pages/` | one file per page, holding the page and its elements |
+| `Configuration/processes/` | one file per process a case may start: parameters, types, directions |
 | `copilot/tasks/` | briefs for delegated work — gitignored, present only in the working tree |
 | `backlog/` | the framework's own backlog — gitignored, same |
 | `source/` | the pre-rewrite framework, kept for reference, gitignored |

@@ -22,6 +22,9 @@ Write one command per line. Blank lines and lines beginning with `#` are ignored
 | analyse | `analyse ["<page path>"] [<pageName>]` | none | `analyse "/0/Shell/#Card/Contacts_FormPage/edit/<id>" ContactForm` |
 | analyse | `analyse ["<page path>"] [<pageName>]` | none | `analyse "/0/Shell/#Card/Contacts_FormPage/edit/{id}" ContactForm` |
 | add-record | `add-record <code> set Column=Value;Column=Value` | `IRecordAddable` | `add-record AddressList set Address type=Business;Full address=Main st. 1` |
+| start | `start <process> [with Param=Value;Param=Value]` | none (a configured process) | `start UsrOrder_Process with Amount=10` |
+| check-result | `check-result <parameter> eq|ne|gt|ge|lt|le|contains|startswith|endswith <value>` | none (an output of the last started process) | `check-result Verdict eq "big"` |
+| check-record | `check-record <object> Column=Value;Column=Value [not] exists` | none (read over OData) | `check-record UsrOrder UsrName=Order 1 exists` |
 
 `check <code> exists` also verifies that the rendered caption matches the `label` in the page file under `Configuration/pages`; required and readonly are never asserted implicitly, they are separate lines.
 
@@ -68,6 +71,58 @@ but they are addressable by the test cases, because the run has two phases. See 
 below. The same work is available without a script as `creatio-tests analyse "<path>"`.
 
 `create` follows its configured section, New button, form, fields, and Save button. `end` logs readable values from the current page without changing the outcome. `analyse` describes a live page and writes its page configuration; it can also be run as the CLI subcommand `analyse`.
+
+## Process cases
+
+The backend tier. A process case starts business processes over the process engine service,
+reads their result parameters back and checks the records they left behind over OData. No page
+is opened, and a run made only of process cases never launches a browser - the case above runs
+in about a second.
+
+```
+use Supervisor
+start UsrOrder_Process with Amount=500;Contact=0c48c818-08f0-4f70-9b58-be512227f3bf
+check-result Verdict eq "big"
+check-result Total ge "5"
+check-record UsrOrder UsrName=Order 1;UsrAmount=500 exists
+check-record UsrOrderLog UsrOrder=0c48c818-08f0-4f70-9b58-be512227f3bf not exists
+```
+
+Process cases live in their own folders (`ProcessCasesFolders`, default `./ProcessCases`) and
+run after the UI cases; `--filter` and `--validate-only` see them the same way. They are a
+different kind of test - what the backend does, not what a user sees - which is why they are
+kept apart from the page cases rather than mixed into them.
+
+`start` names a process described under `Configuration/processes` (one file per process, see
+below). Values after `with` are checked against the parameter's type before the run, an output
+parameter cannot be passed in, and a bare value may name a static value. The engine's answer
+decides the line: a process that did not start (unknown, unpublished, an exception) fails with
+the engine's message.
+
+`check-result` reads an output or variable parameter of the process the script last started,
+with the operators and typing of `check-value`: numbers compare as numbers, dates as dates, the
+rest as text. A lookup result is its id.
+
+`check-record` builds an OData filter from the list: a GUID, `true`/`false` and a number go
+unquoted, everything else is a string; a lookup column given a GUID is addressed by its `Id`
+suffix (`UsrContact=<guid>` reads `UsrContactId`). Only existence is asserted, which is enough
+to prove that a process created, found or removed what it should have.
+
+```jsonc
+// Configuration/processes/UsrOrder_Process.json
+{
+  "name": "UsrOrder_Process",
+  "parameters": [
+    { "code": "Amount", "type": "Money", "direction": "in" },
+    { "code": "Verdict", "type": "Text", "direction": "out" },
+    { "code": "Total", "type": "Integer", "direction": "variable" }
+  ]
+}
+```
+
+`direction` is `in`, `out` or `variable` (both). The file is what the process schema declares;
+the knowledge base's `proc.py test-config <package> <Process> --out <file>` writes it from the
+package, so a process built as files describes itself for its tests.
 
 ## Element Types
 
@@ -208,8 +263,9 @@ All paths are relative to the working directory.
 
 | File | Fields |
 | --- | --- |
-| `creatio.env.config.json` (copy `creatio.env.config.example.json`) | `BaseUrl`, optional `AuthUrl`, `Users` (`Username`, `Password`), optional `CasesFolders` and `AnalysisFolders` |
-| `creatio.site.config.json` | `AuthPath`, optional `ODataBasePath`, optional `ProcessStartPath` |
+| `creatio.env.config.json` (copy `creatio.env.config.example.json`) | `BaseUrl`, optional `AuthUrl`, `Users` (`Username`, `Password`), optional `CasesFolders`, `AnalysisFolders` and `ProcessCasesFolders` |
+| `creatio.site.config.json` | `AuthPath`, optional `ODataBasePath`, optional `ProcessStartPath` (default `/0/ServiceModel/ProcessEngineService.svc/RunProcess`) |
+| `processes/*.json` | one file per process a case may start: `name` and `parameters` (`code`, `type`, `direction`) |
 | `pages/*.json` | one file per page: `name`, `url`, optional `type`, and `elements` (`code`, `label`, `type`, optional `pinned`, plus type-specific options). The page is implied by the file, so elements never repeat it. |
 | `objects.config.json` | `objects`: `name`, `sectionPage`, `formPage`, `newButton`, `saveButton`, `fields` mapping codes to static-value names |
 | `static.values.json` | object mapping static names to scalar values |

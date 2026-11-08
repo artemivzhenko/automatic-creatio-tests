@@ -1,0 +1,15 @@
+{
+  "name": "iaScriptBuilt_Process",
+  "parameters": [
+    {
+      "code": "Counter",
+      "type": "Integer",
+      "direction": "variable"
+    },
+    {
+      "code": "Verdict",
+      "type": "Text",
+      "direction": "out"
+    }
+  ]
+}

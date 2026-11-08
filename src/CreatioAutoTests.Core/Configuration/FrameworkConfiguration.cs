@@ -17,6 +17,9 @@ public sealed class ConfigurationPaths
     /// <summary>Relative path of object creation workflow definitions.</summary>
     public string Objects { get; set; } = "Configuration/objects.config.json";
 
+    /// <summary>Directory holding one file per process a script may start. Optional.</summary>
+    public string ProcessesDirectory { get; set; } = "Configuration/processes";
+
     /// <summary>Relative path of named scalar values used by scripts and object workflows.</summary>
     public string StaticValues { get; set; } = "Configuration/static.values.json";
 
@@ -41,6 +44,7 @@ public sealed class FrameworkConfiguration
         ElementCatalog catalog,
         IReadOnlyDictionary<string, string> staticValues,
         IReadOnlyDictionary<string, ObjectDefinition> objects,
+        IReadOnlyDictionary<string, ProcessDefinition> processes,
         string rootDirectory,
         ConfigurationPaths paths,
         UiElementRegistry registry)
@@ -51,6 +55,7 @@ public sealed class FrameworkConfiguration
         Catalog = catalog;
         StaticValues = staticValues;
         Objects = objects;
+        Processes = processes;
         _rootDirectory = rootDirectory;
         _paths = paths;
         _registry = registry;
@@ -84,6 +89,13 @@ public sealed class FrameworkConfiguration
 
     /// <summary>Object definitions keyed by name for the <c>create</c> command.</summary>
     public IReadOnlyDictionary<string, ObjectDefinition> Objects { get; }
+
+    /// <summary>Process definitions keyed by schema name for the <c>start</c> command.</summary>
+    public IReadOnlyDictionary<string, ProcessDefinition> Processes { get; }
+
+    /// <summary>Folders scanned for process cases, defaulting to ProcessCases when nothing is configured.</summary>
+    public IReadOnlyList<string> ProcessCasesFolders =>
+        Environment.ProcessCasesFolders.Count > 0 ? Environment.ProcessCasesFolders : new List<string> { "ProcessCases" };
 
     /// <summary>Configured user names used by static validation.</summary>
     public IReadOnlyCollection<string> UserNames =>
@@ -130,8 +142,12 @@ public sealed class FrameworkConfiguration
             .Objects
             .ToDictionary(o => o.Name, o => o, StringComparer.OrdinalIgnoreCase);
 
+        var processes = loader
+            .LoadProcesses(paths.ProcessesDirectory)
+            .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
+
         return new FrameworkConfiguration(
-            environment, site, runSettings, catalog, staticValues, objects,
+            environment, site, runSettings, catalog, staticValues, objects, processes,
             rootDirectory, paths, registry);
     }
 }

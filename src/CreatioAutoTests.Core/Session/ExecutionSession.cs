@@ -17,6 +17,7 @@ public sealed class ExecutionSession : IExecutionSession, IAsyncDisposable
 {
     private readonly BrowserSessionPool _pool;
     private readonly UiElementFactory _factory;
+    private readonly CreatioODataClient _backend;
     private readonly ILogger<ExecutionSession> _logger;
 
     private IPage? _page;
@@ -26,20 +27,53 @@ public sealed class ExecutionSession : IExecutionSession, IAsyncDisposable
     public ExecutionSession(
         BrowserSessionPool pool,
         UiElementFactory factory,
+        CreatioODataClient backend,
         ElementCatalog catalog,
         RunSettings settings,
         IReadOnlyDictionary<string, string> staticValues,
         IReadOnlyDictionary<string, ObjectDefinition> objects,
+        IReadOnlyDictionary<string, ProcessDefinition> processes,
         ILogger<ExecutionSession> logger)
     {
         _pool = pool ?? throw new ArgumentNullException(nameof(pool));
         _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        _backend = backend ?? throw new ArgumentNullException(nameof(backend));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         StaticValues = staticValues ?? throw new ArgumentNullException(nameof(staticValues));
         Objects = objects ?? throw new ArgumentNullException(nameof(objects));
+        Processes = processes ?? throw new ArgumentNullException(nameof(processes));
+    }
+
+    /// <summary>Processes a script may start, from the processes directory.</summary>
+    public IReadOnlyDictionary<string, ProcessDefinition> Processes { get; }
+
+    /// <summary>Outcome of the last 'start' in this case.</summary>
+    public ProcessRunResult? LastProcess { get; private set; }
+
+    /// <summary>Starts the process over the engine service as the first configured user and keeps the result.</summary>
+    public async Task<ProcessRunResult> StartProcessAsync(
+        string process,
+        IReadOnlyDictionary<string, string> values,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Processes.TryGetValue(process, out var definition))
+        {
+            throw new InvalidOperationException("Process '" + process + "' is not configured.");
+        }
+
+        var outputs = definition.Outputs.Select(p => p.Code).ToArray();
+        LastProcess = await _backend.RunProcessAsync(process, values, outputs, cancellationToken).ConfigureAwait(false);
+        return LastProcess;
+    }
+
+    /// <summary>Reads at most one row of the object with the filter over OData.</summary>
+    public async Task<bool> RecordExistsAsync(string entity, string filter, CancellationToken cancellationToken = default)
+    {
+        var rows = await _backend.QueryAsync(entity, new[] { "Id" }, filter, top: 1, cancellationToken).ConfigureAwait(false);
+        return rows.Count > 0;
     }
 
     /// <summary>Runtime timeouts and continuation behavior for this case.</summary>

@@ -55,4 +55,22 @@ public interface IExecutionSession
 
     /// <summary>Creates the live element for a target the validator resolved earlier.</summary>
     IUiElement Materialize(ResolvedTarget target);
+
+    /// <summary>Processes a script may start, keyed by schema name.</summary>
+    IReadOnlyDictionary<string, ProcessDefinition> Processes { get; }
+
+    /// <summary>What the last 'start' produced, or null before one ran.</summary>
+    Session.ProcessRunResult? LastProcess { get; }
+
+    /// <summary>
+    /// Starts a configured process over the process engine service, asking for every output
+    /// parameter back, and remembers the outcome for 'check-result'. Needs no page.
+    /// </summary>
+    Task<Session.ProcessRunResult> StartProcessAsync(
+        string process,
+        IReadOnlyDictionary<string, string> values,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Whether at least one record of the object matches the OData filter.</summary>
+    Task<bool> RecordExistsAsync(string entity, string filter, CancellationToken cancellationToken = default);
 }

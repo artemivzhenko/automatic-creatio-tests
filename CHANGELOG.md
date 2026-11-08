@@ -8,6 +8,16 @@ All notable changes to this project are recorded here. The format follows
 
 ### Added
 
+- **Process cases.** A backend tier kept apart from the page cases: scripts under
+  `ProcessCases/` (`ProcessCasesFolders`) start a business process over the process engine
+  service (`start <process> [with Param=Value;...]`), assert its result parameters
+  (`check-result <parameter> <op> <value>`, the operators and typing of `check-value`) and the
+  records it left behind over OData (`check-record <object> Column=Value;... [not] exists`).
+  Processes are described under `Configuration/processes/` (parameters, types, directions), so
+  an unknown process, an output passed in, or a value of the wrong type fails in validation. The
+  browser is now launched on first use, so a run of process cases alone never opens one: the
+  bundled case runs in about a second.
+
 - **Data grids.** New element type `DataGrid` (`crt-data-grid`), with `check <code> [not] exists` and
   `check <code> is [not] editable`. Editability and placement inside an expansion panel are two
   properties Creatio configures independently, so all four combinations occur and each is asserted

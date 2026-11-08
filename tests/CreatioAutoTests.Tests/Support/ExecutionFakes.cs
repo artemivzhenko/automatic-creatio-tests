@@ -27,6 +27,23 @@ public sealed class FakeExecutionSession : IExecutionSession
         MaterializedCount++;
         return new FakeUiElement(target.Code);
     }
+
+    public IReadOnlyDictionary<string, ProcessDefinition> Processes { get; init; } =
+        new Dictionary<string, ProcessDefinition>(StringComparer.OrdinalIgnoreCase);
+    public CreatioAutoTests.Session.ProcessRunResult? LastProcess { get; set; }
+    public Func<string, IReadOnlyDictionary<string, string>, CreatioAutoTests.Session.ProcessRunResult>? OnStart { get; init; }
+    public Func<string, string, bool>? OnRecordExists { get; init; }
+
+    public Task<CreatioAutoTests.Session.ProcessRunResult> StartProcessAsync(string process, IReadOnlyDictionary<string, string> values, CancellationToken cancellationToken = default)
+    {
+        LastProcess = OnStart is null
+            ? new CreatioAutoTests.Session.ProcessRunResult(process, Guid.NewGuid().ToString(), true, null, new Dictionary<string, string>())
+            : OnStart(process, values);
+        return Task.FromResult(LastProcess);
+    }
+
+    public Task<bool> RecordExistsAsync(string entity, string filter, CancellationToken cancellationToken = default) =>
+        Task.FromResult(OnRecordExists?.Invoke(entity, filter) ?? false);
 }
 
 public sealed class FakeUiElement : IUiElement
