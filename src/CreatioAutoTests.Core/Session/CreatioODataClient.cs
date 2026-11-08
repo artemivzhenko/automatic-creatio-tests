@@ -172,6 +172,54 @@ public sealed class CreatioODataClient : IDisposable
         return rows.EnumerateArray().Select(r => r.Clone()).ToArray();
     }
 
+    /// <summary>
+    /// Starts a process through <c>ProcessEngineService.svc/RunProcess</c> and returns what the
+    /// engine answered, result parameters included. The CSRF cookie Creatio sets at login is echoed
+    /// as a header, which is what every writing call needs.
+    /// </summary>
+    /// <param name="schemaName">Schema name of the process.</param>
+    /// <param name="parameters">Values to pass in, as text; the engine converts them.</param>
+    /// <param name="resultParameters">Codes of the parameters to read back.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    public async Task<ProcessRunResult> RunProcessAsync(
+        string schemaName,
+        IReadOnlyDictionary<string, string> parameters,
+        IEnumerable<string> resultParameters,
+        CancellationToken cancellationToken = default)
+    {
+        await AuthenticateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        var payload = JsonSerializer.Serialize(new
+        {
+            schemaName,
+            parameterValues = parameters.Select(p => new { name = p.Key, value = p.Value }).ToArray(),
+            resultParameterNames = resultParameters.ToArray(),
+        });
+
+        var path = (_site.ProcessStartPath ?? "/0/ServiceModel/ProcessEngineService.svc/RunProcess").Trim();
+        using var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + (path.StartsWith('/') ? path : "/" + path));
+        request.Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+
+        var csrf = _cookies.GetCookies(new Uri(BaseUrl))["BPMCSRF"]?.Value;
+        if (!string.IsNullOrEmpty(csrf))
+        {
+            request.Headers.Add("BPMCSRF", csrf);
+        }
+
+        using var response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException(
+                "RunProcess '" + schemaName + "' failed with " + (int)response.StatusCode + ": " +
+                body[..Math.Min(body.Length, 400)]);
+        }
+
+        _logger.LogDebug("RunProcess {Process}: {Body}", schemaName, body[..Math.Min(body.Length, 400)]);
+        return ProcessRunResult.Parse(schemaName, body);
+    }
+
     private Uri BuildAuthUri()
     {
         if (!string.IsNullOrWhiteSpace(_environment.AuthUrl))

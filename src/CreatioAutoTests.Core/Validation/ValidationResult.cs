@@ -31,14 +31,25 @@ public sealed class ValidationResult
         string? error,
         IReadOnlyList<ResolvedTarget> targets,
         string? nextPage,
-        bool declaresUser)
+        bool declaresUser,
+        string? nextProcess = null)
     {
         IsValid = isValid;
         Error = error;
         Targets = targets;
         NextPage = nextPage;
         DeclaresUser = declaresUser;
+        NextProcess = nextProcess;
     }
+
+    /// <summary>
+    /// Process the script has started after this command. Set by 'start' so that later
+    /// 'check-result' lines are validated against that process's parameters.
+    /// </summary>
+    public string? NextProcess { get; }
+
+    /// <summary>Creates a success that records the process later result checks read.</summary>
+    public static ValidationResult OkWithProcess(string process) => new(true, null, NoTargets, null, false, process);
 
     /// <summary>Whether the command shape and all of its references passed static validation.</summary>
     public bool IsValid { get; }

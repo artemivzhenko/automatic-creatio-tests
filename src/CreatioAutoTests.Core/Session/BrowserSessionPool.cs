@@ -7,33 +7,48 @@ namespace CreatioAutoTests.Session;
 /// <summary>
 /// Keeps one browser context per user for the whole run. Re-using the context is what makes
 /// switching users cheap and keeps each user's storage isolated from the others.
+///
+/// The browser itself is launched on first use: a run made only of process cases never opens a
+/// page, so it never pays for a browser either.
 /// </summary>
 public sealed class BrowserSessionPool : IAsyncDisposable
 {
-    private readonly IBrowser _browser;
+    private readonly Func<CancellationToken, Task<IBrowser>> _launch;
     private readonly CreatioAuthenticator _authenticator;
     private readonly ILogger<BrowserSessionPool> _logger;
     private readonly Dictionary<string, IBrowserContext> _contexts;
     private readonly ViewportSize _viewport;
+    private IBrowser? _browser;
 
     /// <summary>Initializes shared per-user browser-context storage for a run.</summary>
-    /// <param name="browser">Browser the contexts are opened in.</param>
+    /// <param name="launch">Launches the browser the contexts are opened in; called once, on first use.</param>
     /// <param name="authenticator">Supplies the cookies a context is seeded with.</param>
     /// <param name="logger">Diagnostic logger.</param>
     /// <param name="viewportWidth">Window width every context uses.</param>
     /// <param name="viewportHeight">Window height every context uses.</param>
+    public BrowserSessionPool(
+        Func<CancellationToken, Task<IBrowser>> launch,
+        CreatioAuthenticator authenticator,
+        ILogger<BrowserSessionPool> logger,
+        int viewportWidth = 1600,
+        int viewportHeight = 950)
+    {
+        _launch = launch ?? throw new ArgumentNullException(nameof(launch));
+        _authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _contexts = new Dictionary<string, IBrowserContext>(StringComparer.OrdinalIgnoreCase);
+        _viewport = new ViewportSize { Width = viewportWidth, Height = viewportHeight };
+    }
+
+    /// <summary>Initializes the pool over an already launched browser.</summary>
     public BrowserSessionPool(
         IBrowser browser,
         CreatioAuthenticator authenticator,
         ILogger<BrowserSessionPool> logger,
         int viewportWidth = 1600,
         int viewportHeight = 950)
+        : this(_ => Task.FromResult(browser ?? throw new ArgumentNullException(nameof(browser))), authenticator, logger, viewportWidth, viewportHeight)
     {
-        _browser = browser ?? throw new ArgumentNullException(nameof(browser));
-        _authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _contexts = new Dictionary<string, IBrowserContext>(StringComparer.OrdinalIgnoreCase);
-        _viewport = new ViewportSize { Width = viewportWidth, Height = viewportHeight };
     }
 
     /// <summary>Returns the context for a user, creating and seeding it on first use.</summary>
@@ -48,6 +63,12 @@ public sealed class BrowserSessionPool : IAsyncDisposable
 
         var user = await _authenticator.AuthenticateAsync(username, cancellationToken).ConfigureAwait(false);
         var baseUri = new Uri(_authenticator.BaseUrl);
+
+        if (_browser is null)
+        {
+            _browser = await _launch(cancellationToken).ConfigureAwait(false);
+            _logger.LogDebug("Browser launched.");
+        }
 
         // The window size is part of the run's definition, not of whoever's machine it runs on:
         // Creatio renders a different page in a narrow window, down to overlays that make a tab
@@ -90,5 +111,11 @@ public sealed class BrowserSessionPool : IAsyncDisposable
         }
 
         _contexts.Clear();
+
+        if (_browser is not null)
+        {
+            await _browser.CloseAsync().ConfigureAwait(false);
+            _browser = null;
+        }
     }
 }

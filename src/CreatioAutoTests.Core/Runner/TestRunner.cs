@@ -25,6 +25,7 @@ public sealed class TestRunner
     private readonly ScriptValidator _validator;
     private readonly CommandExecutor _executor;
     private readonly CreatioAuthenticator _authenticator;
+    private readonly CreatioODataClient _backend;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<TestRunner> _logger;
 
@@ -36,6 +37,7 @@ public sealed class TestRunner
         ScriptValidator validator,
         CommandExecutor executor,
         CreatioAuthenticator authenticator,
+        CreatioODataClient backend,
         ILoggerFactory loggerFactory)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -44,6 +46,7 @@ public sealed class TestRunner
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _executor = executor ?? throw new ArgumentNullException(nameof(executor));
         _authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
+        _backend = backend ?? throw new ArgumentNullException(nameof(backend));
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         _logger = loggerFactory.CreateLogger<TestRunner>();
     }
@@ -55,6 +58,13 @@ public sealed class TestRunner
     /// <summary>Every .act file the configuration points at, skipping the temporary ones.</summary>
     public IReadOnlyList<string> DiscoverTestFiles(string? nameFilter = null) =>
         DiscoverIn(_configuration.CasesFolders, nameFilter, warnWhenMissing: true);
+
+    /// <summary>
+    /// Process cases: the backend tier, run after the UI cases. The folder is optional, so a
+    /// missing one is not reported.
+    /// </summary>
+    public IReadOnlyList<string> DiscoverProcessFiles(string? nameFilter = null) =>
+        DiscoverIn(_configuration.ProcessCasesFolders, nameFilter, warnWhenMissing: false);
 
     private IReadOnlyList<string> DiscoverIn(
         IReadOnlyList<string> folders,
@@ -105,7 +115,10 @@ public sealed class TestRunner
             _configuration.Catalog,
             _configuration.StaticValues,
             _configuration.UserNames,
-            _configuration.Objects);
+            _configuration.Objects)
+        {
+            Processes = _configuration.Processes,
+        };
 
         return _validator.Validate(name, filePath, commands, context);
     }
@@ -129,8 +142,9 @@ public sealed class TestRunner
             : Array.Empty<string>();
 
         var testFiles = analysisOnly ? Array.Empty<string>() : DiscoverTestFiles(nameFilter);
+        var processFiles = analysisOnly ? Array.Empty<string>() : DiscoverProcessFiles(nameFilter);
 
-        if (analysisFiles.Count == 0 && testFiles.Count == 0)
+        if (analysisFiles.Count == 0 && testFiles.Count == 0 && processFiles.Count == 0)
         {
             _logger.LogWarning("Nothing to do: no {Extension} files were found.", TestFileExtension);
             return new RunResult { Cases = Array.Empty<TestCaseResult>(), Duration = stopwatch.Elapsed };
@@ -139,15 +153,15 @@ public sealed class TestRunner
         var analysisResults = new List<TestCaseResult>();
         var caseResults = new List<TestCaseResult>();
 
-        // One browser serves both phases; a Creatio login is slow enough to be worth sharing.
+        // One browser serves every phase, launched the first time a case opens a page; a run of
+        // process cases alone never launches it.
         using var playwright = await Microsoft.Playwright.Playwright.CreateAsync().ConfigureAwait(false);
-        await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
-        {
-            Headless = _configuration.RunSettings.Headless
-        }).ConfigureAwait(false);
 
         await using var pool = new BrowserSessionPool(
-            browser,
+            _ => playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            {
+                Headless = _configuration.RunSettings.Headless
+            }),
             _authenticator,
             _loggerFactory.CreateLogger<BrowserSessionPool>(),
             _configuration.RunSettings.ViewportWidth,
@@ -182,6 +196,13 @@ public sealed class TestRunner
         {
             caseResults.AddRange(
                 await RunPlansAsync(testFiles, pool, cancellationToken).ConfigureAwait(false));
+        }
+
+        if (processFiles.Count > 0)
+        {
+            _logger.LogInformation("Process cases: {Count} script(s).", processFiles.Count);
+            caseResults.AddRange(
+                await RunPlansAsync(processFiles, pool, cancellationToken).ConfigureAwait(false));
         }
 
         stopwatch.Stop();
@@ -228,10 +249,12 @@ public sealed class TestRunner
         await using var session = new ExecutionSession(
             pool,
             _elementFactory,
+            _backend,
             _configuration.Catalog,
             _configuration.RunSettings,
             _configuration.StaticValues,
             _configuration.Objects,
+            _configuration.Processes,
             _loggerFactory.CreateLogger<ExecutionSession>());
 
         try

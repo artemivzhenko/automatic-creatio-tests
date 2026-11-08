@@ -1,0 +1,17 @@
+# Test bed for dynamic pages (tasks S11-T01), the record where the rules hide controls:
+# iaIsActive is false (dates hidden) and the contact is empty (comment and order grid hidden).
+#
+# The page file says these controls exist, so validation passes and every line below fails at
+# run time with "not found". That gap - a page file is a snapshot of one record's state - is what
+# S11 is about. Until it is closed this case is expected to FAIL.
+
+use Supervisor
+open iaTestsForm for 6993bace-71b6-4be7-84b8-cf363d0113be
+
+click GeneralInfoTab
+
+check-value iaContactLookup eq ""
+check iaComment exists
+check iaOrderList exists
+check iaDate exists
+end

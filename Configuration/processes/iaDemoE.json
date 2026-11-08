@@ -1,0 +1,10 @@
+{
+  "name": "iaDemoE",
+  "parameters": [
+    {
+      "code": "Total",
+      "type": "Integer",
+      "direction": "out"
+    }
+  ]
+}

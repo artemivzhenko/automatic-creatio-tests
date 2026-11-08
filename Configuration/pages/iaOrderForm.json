@@ -1,0 +1,141 @@
+{
+  "name": "iaOrderForm",
+  "url": "/0/Shell/#Card/iaOrder_FormPage",
+  "type": "FreedomUI",
+  "elements": [
+    {
+      "code": "iaIsUrgent",
+      "label": "Urgent",
+      "type": "Boolean"
+    },
+    {
+      "code": "AttachmentAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AttachmentRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BackButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CloseButton",
+      "label": "Close",
+      "type": "Button"
+    },
+    {
+      "code": "SetRecordRightsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "iaOrdersGrid",
+      "label": "",
+      "type": "DataGrid",
+      "columns": [
+        "Name",
+        "Quantity",
+        "Amount"
+      ]
+    },
+    {
+      "code": "iaShipDate",
+      "label": "Ship date",
+      "type": "Date"
+    },
+    {
+      "code": "iaDueDate",
+      "label": "Due date",
+      "type": "DateTime"
+    },
+    {
+      "code": "iaAmount",
+      "label": "Amount",
+      "type": "Decimal"
+    },
+    {
+      "code": "iaWeight",
+      "label": "Weight",
+      "type": "Decimal"
+    },
+    {
+      "code": "iaEmail",
+      "label": "Email",
+      "type": "Email"
+    },
+    {
+      "code": "iaQuantity",
+      "label": "Quantity",
+      "type": "Integer"
+    },
+    {
+      "code": "iaWebsite",
+      "label": "Website",
+      "type": "Link"
+    },
+    {
+      "code": "iaContact",
+      "label": "Contact",
+      "type": "Lookup"
+    },
+    {
+      "code": "iaManager",
+      "label": "Manager",
+      "type": "Lookup"
+    },
+    {
+      "code": "iaStatus",
+      "label": "Status",
+      "type": "Lookup"
+    },
+    {
+      "code": "iaPhone",
+      "label": "Phone",
+      "type": "Phone"
+    },
+    {
+      "code": "iaRichNotes",
+      "label": "Rich notes",
+      "type": "RichText"
+    },
+    {
+      "code": "GeneralInfoTab",
+      "label": "General information",
+      "type": "Tab"
+    },
+    {
+      "code": "iaDescription",
+      "label": "Description",
+      "type": "Text"
+    },
+    {
+      "code": "iaName",
+      "label": "Name",
+      "type": "Text"
+    },
+    {
+      "code": "iaNotes",
+      "label": "Notes",
+      "type": "Text"
+    },
+    {
+      "code": "iaPickupTime",
+      "label": "Pickup time",
+      "type": "Time"
+    },
+    {
+      "code": "CardButtonToggleGroup",
+      "label": "",
+      "type": "ToggleTab",
+      "tabs": [
+        "Feed",
+        "Attachments"
+      ]
+    }
+  ]
+}

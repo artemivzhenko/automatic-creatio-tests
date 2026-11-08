@@ -40,6 +40,7 @@ public sealed class ScriptValidator
         var steps = new List<ExecutionStep>();
 
         context.CurrentPage = null;
+        context.CurrentProcess = null;
         context.UserDeclared = false;
 
         if (commands.Count == 0)
@@ -110,6 +111,11 @@ public sealed class ScriptValidator
         if (result.NextPage is not null)
         {
             context.CurrentPage = result.NextPage;
+        }
+
+        if (result.NextProcess is not null)
+        {
+            context.CurrentProcess = result.NextProcess;
         }
 
         if (result.DeclaresUser)

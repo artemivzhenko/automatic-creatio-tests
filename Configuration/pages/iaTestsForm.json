@@ -1,0 +1,105 @@
+{
+  "name": "iaTestsForm",
+  "url": "/0/Shell/#Card/iaTests_FormPage",
+  "type": "FreedomUI",
+  "elements": [
+    {
+      "code": "iaIsActive",
+      "label": "Is active",
+      "type": "Boolean"
+    },
+    {
+      "code": "AttachmentAddButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "AttachmentRefreshButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "BackButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "CloseButton",
+      "label": "Close",
+      "type": "Button"
+    },
+    {
+      "code": "SetRecordRightsButton",
+      "label": "",
+      "type": "Button"
+    },
+    {
+      "code": "iaOrderList",
+      "label": "",
+      "type": "DataGrid",
+      "columns": [
+        "Name",
+        "Quantity"
+      ]
+    },
+    {
+      "code": "iaDate",
+      "label": "Date",
+      "type": "Date"
+    },
+    {
+      "code": "iaOnlyDate",
+      "label": "Only date",
+      "type": "Date"
+    },
+    {
+      "code": "iaDateTime",
+      "label": "DateTime",
+      "type": "DateTime"
+    },
+    {
+      "code": "iaAmount",
+      "label": "Amount",
+      "type": "Decimal"
+    },
+    {
+      "code": "iaNumber",
+      "label": "Number",
+      "type": "Integer"
+    },
+    {
+      "code": "iaAccount",
+      "label": "Account",
+      "type": "Lookup"
+    },
+    {
+      "code": "iaContactLookup",
+      "label": "ContactLookup",
+      "type": "Lookup"
+    },
+    {
+      "code": "GeneralInfoTab",
+      "label": "General information",
+      "type": "Tab"
+    },
+    {
+      "code": "iaComment",
+      "label": "Comment",
+      "type": "Text"
+    },
+    {
+      "code": "iaName",
+      "label": "Name",
+      "type": "Text"
+    },
+    {
+      "code": "CardButtonToggleGroup",
+      "label": "",
+      "type": "ToggleTab",
+      "tabs": [
+        "Feed",
+        "Attachments"
+      ]
+    }
+  ]
+}

@@ -239,7 +239,7 @@ public static class Program
     /// <summary>Runs the validation pass only: useful as a fast pre-commit or CI lint step.</summary>
     private static int Validate(TestRunner runner, string? filter)
     {
-        var files = runner.DiscoverTestFiles(filter);
+        var files = runner.DiscoverTestFiles(filter).Concat(runner.DiscoverProcessFiles(filter)).ToList();
         var failed = 0;
 
         foreach (var file in files)

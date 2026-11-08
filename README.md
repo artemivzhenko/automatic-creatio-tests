@@ -99,8 +99,31 @@ dotnet run --project src/CreatioAutoTests.Cli -- --analyse-only
 | Execution | Parsing, plans, and command execution |
 | Runner | CLI and NUnit-facing orchestration |
 | Analysis | Reads live Freedom UI pages and writes their per-page configuration |
+| Process cases | The backend tier: `start`, `check-result`, `check-record` over the process engine service and OData, no browser |
 
 The first pass parses and validates a complete case. Only a valid plan reaches the second pass, which drives Playwright. When analysis is selected, analysis scripts run first and the catalog is reloaded before cases start. See [docs/dsl.md](docs/dsl.md) for the language reference.
+
+## Process Tests
+
+Business processes are tested without a browser: a case under [ProcessCases](ProcessCases)
+starts a process, reads its result parameters and checks the records it touched.
+
+```act
+use Supervisor
+start UsrOrder_Process with Amount=500
+check-result Verdict eq "big"
+check-record UsrOrder UsrName=Order 1 exists
+```
+
+The process is described under [Configuration/processes](Configuration/processes) (its
+parameters and their directions), so a wrong parameter or value fails in validation. See
+[docs/dsl.md](docs/dsl.md), "Process cases".
+
+## MCP Server
+
+[mcp-server/](mcp-server/README.md) exposes the utility to an agent: the DSL, the cases and
+page/process files, `validate`, `run`, `analyse`, `schemas` and the last report. It reads and
+runs only, so an agent that may test but not change gets this server alone.
 
 ## Extending It
 

@@ -90,7 +90,7 @@ public sealed class ValidatorTests
         Assert.That(keywords, Is.EquivalentTo(new[]
         {
             "use", "open", "check", "check-value", "set", "click", "goto", "clear", "wait", "create", "end",
-            "analyse", "add-record"
+            "analyse", "add-record", "start", "check-result", "check-record"
         }));
     }
 

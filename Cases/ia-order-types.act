@@ -1,0 +1,67 @@
+# S12-T05: every column type of iaOrder round-trips through the page built with pages.py.
+# The page is never saved: values are written into the form and the page is closed.
+
+use Supervisor
+open iaOrderForm for a1b2c3d4-0000-4000-8000-000000000002
+
+click GeneralInfoTab
+
+# ---------- Text (ShortText, MediumText, LongText) ----------
+set iaName "Order types roundtrip"
+check-value iaName eq "Order types roundtrip"
+check-value iaName startswith "Order"
+set iaNotes "medium text"
+check-value iaNotes eq "medium text"
+set iaDescription "long text"
+check-value iaDescription contains "long"
+
+# ---------- Lookup ----------
+set iaStatus "New"
+check-value iaStatus eq "New"
+set iaContact "Supervisor"
+check-value iaContact eq "Supervisor"
+
+# ---------- Integer, Decimal (Float2), Money ----------
+set iaQuantity "7"
+check-value iaQuantity eq "7"
+check-value iaQuantity gt "5"
+set iaWeight "12.5"
+check-value iaWeight eq "12.5"
+set iaAmount "199.99"
+check-value iaAmount eq "199.99"
+check-value iaAmount ge "199.99"
+
+# ---------- Boolean ----------
+set iaIsUrgent "false"
+check-value iaIsUrgent eq "false"
+
+# ---------- Date, Time, DateTime ----------
+set iaShipDate "2026-12-24T15:30:00"
+check-value iaShipDate eq "2026-12-24T00:00:00"
+set iaPickupTime "2000-01-01T08:15:00"
+check-value iaPickupTime eq "0001-01-01T08:15:00"
+set iaDueDate "2026-12-31T18:45:00"
+check-value iaDueDate eq "2026-12-31T18:45:00"
+check-value iaDueDate gt "2026-01-01T00:00:00"
+
+# ---------- Email, Phone, Link, RichText ----------
+set iaEmail "qa@example.com"
+check-value iaEmail eq "qa@example.com"
+set iaPhone "+380501112233"
+check-value iaPhone eq "+380501112233"
+set iaWebsite "https://example.com/orders"
+check-value iaWebsite eq "https://example.com/orders"
+set iaRichNotes "rich text roundtrip"
+check-value iaRichNotes contains "rich text roundtrip"
+
+# ---------- copy between fields ----------
+set iaNotes iaName
+check-value iaNotes eq "Order types roundtrip"
+
+# ---------- clear a lookup (last: the page rule hides the website once the contact is empty) ----------
+clear iaContact
+check-value iaContact eq ""
+wait 2 second
+check iaWebsite not exists
+
+end

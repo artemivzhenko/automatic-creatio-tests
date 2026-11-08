@@ -1,6 +1,6 @@
 {
-  "headless": false,
-  "continueOnFailure": false,
+  "headless": true,
+  "continueOnFailure": true,
   "elementTimeoutMs": 15000,
   "pageLoadTimeoutMs": 60000,
   "reportsDirectory": "Reports",
