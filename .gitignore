@@ -45,3 +45,9 @@ internal_docs/*
 # MCP server
 mcp-server/.venv/
 __pycache__/
+
+# Cases and page/process files written against a private environment stay local
+Cases/ia-*.act
+ProcessCases/ia-*.act
+Configuration/pages/ia*.json
+Configuration/processes/ia*.json
