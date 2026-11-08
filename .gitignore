@@ -42,3 +42,6 @@ ai_helpers/*
 backlog/*
 copilot/*
 internal_docs/*
+# MCP server
+mcp-server/.venv/
+__pycache__/

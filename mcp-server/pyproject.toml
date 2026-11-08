@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "creatio-tests-mcp"
+version = "0.1.0"
+description = "MCP server exposing the Creatio UI test utility: DSL, cases, validate, run, analyse"
+requires-python = ">=3.10"
+dependencies = ["mcp>=2.0"]
+
+[project.scripts]
+creatio-tests-mcp = "server:main"
+
+[tool.setuptools]
+py-modules = ["server"]

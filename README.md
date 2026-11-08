@@ -119,6 +119,12 @@ The process is described under [Configuration/processes](Configuration/processes
 parameters and their directions), so a wrong parameter or value fails in validation. See
 [docs/dsl.md](docs/dsl.md), "Process cases".
 
+## MCP Server
+
+[mcp-server/](mcp-server/README.md) exposes the utility to an agent: the DSL, the cases and
+page/process files, `validate`, `run`, `analyse`, `schemas` and the last report. It reads and
+runs only, so an agent that may test but not change gets this server alone.
+
 ## Extending It
 
 To add a command, copy [src/CreatioAutoTests.Core/Commands/ClickCommand.cs](src/CreatioAutoTests.Core/Commands/ClickCommand.cs), choose or add a validator, declare `SupportedTargets`, and add unit tests. No registry, enum, or switch is edited.
