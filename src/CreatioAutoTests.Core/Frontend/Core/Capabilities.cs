@@ -140,6 +140,23 @@ public interface IColumned : IUiElement
 }
 
 /// <summary>
+/// The element lists records as rows with named columns and can find one by its cell values.
+/// Used by <c>check-row</c>, <c>select-row</c> and <c>delete-row</c>: a row is named by
+/// <c>Column=Value;Column=Value</c> on the rendered captions, never by position.
+/// </summary>
+public interface IRowed : IUiElement
+{
+    /// <summary>Whether a rendered row has every named cell equal to the given text.</summary>
+    Task<bool> HasRowAsync(IReadOnlyList<Execution.RecordAssignment> cells, CancellationToken cancellationToken = default);
+
+    /// <summary>Clicks the matching row, making it the selected one.</summary>
+    Task SelectRowAsync(IReadOnlyList<Execution.RecordAssignment> cells, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes the matching row through the element's own delete action, confirming when asked.</summary>
+    Task DeleteRowAsync(IReadOnlyList<Execution.RecordAssignment> cells, CancellationToken cancellationToken = default);
+}
+
+/// <summary>
 /// The element can gain a new record from inside the page, without navigating away.
 ///
 /// A Creatio grid that allows inline editing adds a row in place and takes its values cell by cell,

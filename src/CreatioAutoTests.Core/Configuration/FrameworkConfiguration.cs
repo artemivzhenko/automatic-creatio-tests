@@ -97,9 +97,9 @@ public sealed class FrameworkConfiguration
     public IReadOnlyList<string> ProcessCasesFolders =>
         Environment.ProcessCasesFolders.Count > 0 ? Environment.ProcessCasesFolders : new List<string> { "ProcessCases" };
 
-    /// <summary>Configured user names used by static validation.</summary>
+    /// <summary>Names a script may write after <c>use</c>: each user's alias, or its login when it has none.</summary>
     public IReadOnlyCollection<string> UserNames =>
-        Environment.Users.Select(u => u.Username).ToArray();
+        Environment.Users.Select(u => u.DisplayName).ToArray();
 
     /// <summary>Folders scanned for test cases, defaulting to Cases when nothing is configured.</summary>
     public IReadOnlyList<string> CasesFolders =>

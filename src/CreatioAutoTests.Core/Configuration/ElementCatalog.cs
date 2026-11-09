@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using CreatioAutoTests.Frontend;
 using CreatioAutoTests.Frontend.Registry;
 
 namespace CreatioAutoTests.Configuration;
@@ -79,6 +80,22 @@ public sealed class ElementCatalog
                 continue;
             }
 
+            if (!UiGenerations.TryParse(page.Type, out var generation))
+            {
+                errors.Add("Page '" + page.Name + "' has unknown type '" + page.Type + "'" + origin +
+                           ". Known types: " + string.Join(", ", UiGenerations.KnownNames) + ".");
+                continue;
+            }
+
+            // A Classic UI control id is the page schema name followed by the element's own name, so a
+            // Classic page without a schema cannot address a single control.
+            if (generation == UiGeneration.ClassicUI && string.IsNullOrWhiteSpace(page.Schema))
+            {
+                errors.Add("Page '" + page.Name + "' is ClassicUI but declares no schema" + origin +
+                           ". Set \"schema\" to the page schema name, for example \"ContactPageV2\".");
+                continue;
+            }
+
             if (!pages.TryAdd(page.Name, page))
             {
                 errors.Add("Page '" + page.Name + "' is declared twice" + origin +
@@ -155,10 +172,13 @@ public sealed class ElementCatalog
             return null;
         }
 
-        if (!registry.TryResolve(definition.Type, out var registration))
+        // The page's generation decides which 'Text' or 'Lookup' this is. A Freedom UI type on a
+        // Classic page is the most likely mistake, and the registry's message says so.
+        var generation = pages[definition.Page].Generation;
+        if (!registry.TryResolve(generation, definition.Type, out var registration))
         {
-            errors.Add("Element '" + label + "' has unknown type '" + definition.Type + "'. Known types: " +
-                       string.Join(", ", registry.KnownTypeNames) + ".");
+            errors.Add("Element '" + label + "' on page '" + definition.Page + "': " +
+                       registry.DescribeUnknown(generation, definition.Type));
             return null;
         }
 

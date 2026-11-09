@@ -13,7 +13,7 @@ namespace CreatioAutoTests.Frontend.Composite;
 /// Neither implies the other, so all four combinations occur.
 /// </summary>
 [UiElement("DataGrid", HostTag = "crt-data-grid", Options = typeof(DataGridOptions), LabeledByPanel = true)]
-public sealed class DataGrid : UiElementBase, IEditableAware, IColumned, IRecordAddable
+public sealed class DataGrid : FreedomElementBase, IEditableAware, IColumned, IRecordAddable
 {
     /// <summary>
     /// The columns a person sees, and nothing else.

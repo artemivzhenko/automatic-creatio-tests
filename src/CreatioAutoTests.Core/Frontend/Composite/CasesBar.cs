@@ -8,7 +8,7 @@ namespace CreatioAutoTests.Frontend.Composite;
 /// 'set X "stage"' and 'check-value X eq "stage"' work on it without any special case in a command.
 /// </summary>
 [UiElement("CasesBar", HostTag = "crt-entity-stage-progress-bar", ValueKind = ValueKind.Stage, Options = typeof(CasesBarOptions))]
-public sealed class CasesBar : UiElementBase, IValueElement
+public sealed class CasesBar : FreedomElementBase, IValueElement
 {
     private const string ToggleSelector = ".button-toggle[data-item-marker]";
     private const string SelectedToggleSelector = ".button-toggle.selected[data-item-marker]";

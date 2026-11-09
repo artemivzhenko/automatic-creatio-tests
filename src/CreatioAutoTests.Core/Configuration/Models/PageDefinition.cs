@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using CreatioAutoTests.Frontend;
 
 namespace CreatioAutoTests.Configuration;
 
@@ -17,8 +18,18 @@ public sealed class PageDefinition
     /// <summary>Path under the base URL. The framework appends /edit/{id} when a record is opened.</summary>
     public string Url { get; set; } = string.Empty;
 
-    /// <summary>Declared page technology, defaulting to the supported Freedom UI runtime.</summary>
-    public string Type { get; set; } = "FreedomUI";
+    /// <summary>
+    /// Declared page technology: <c>FreedomUI</c> (the default) or <c>ClassicUI</c>. It decides which
+    /// element types the page may use and how the framework waits for the page and finds its controls.
+    /// </summary>
+    public string Type { get; set; } = UiGenerations.FreedomUIName;
+
+    /// <summary>
+    /// Classic UI only: the page schema name, for example <c>ContactPageV2</c>. Every control id on a
+    /// Classic page starts with it, so without it nothing on the page can be addressed. Ignored on a
+    /// Freedom UI page, where elements carry their own <c>element-name</c>.
+    /// </summary>
+    public string? Schema { get; set; }
 
     /// <summary>
     /// Controls on this page. Each element's <see cref="ElementDefinition.Page"/> is filled in from
@@ -29,6 +40,14 @@ public sealed class PageDefinition
     /// <summary>File the page was read from. Set by the loader, used to make errors traceable.</summary>
     [JsonIgnore]
     public string? SourceFile { get; set; }
+
+    /// <summary>
+    /// <see cref="Type"/> as a generation. An unrecognised type reads as Freedom UI here so that
+    /// callers never throw; the catalog is where an unknown type is reported.
+    /// </summary>
+    [JsonIgnore]
+    public UiGeneration Generation =>
+        UiGenerations.TryParse(Type, out var generation) ? generation : UiGeneration.FreedomUI;
 
     /// <summary>Formats the DSL page name and its base-relative address for diagnostics.</summary>
     public override string ToString() => Name + " (" + Url + ")";

@@ -2,7 +2,7 @@
 
 ## What It Is
 
-CreatioAutoTests is a DSL for testing Creatio Freedom UI. Test cases are `.act` files, not C#; the runner validates every line before it opens a browser.
+CreatioAutoTests is a DSL for testing Creatio pages, Freedom UI and Classic UI alike. Test cases are `.act` files, not C#; the runner validates every line before it opens a browser.
 
 ## A Test Case At A Glance
 
@@ -21,9 +21,10 @@ check JobTitle is not readonly
 - Chromium, installed in step 2 below
 - A reachable Creatio instance, and a user that can log in to it
 
-Verified against Creatio 8.3.2 (.NET Framework, English interface). Other versions and interface
-languages are untested; see [docs/dsl.md](docs/dsl.md) for the one place the interface language
-matters.
+Verified against Creatio 8.3.2 (.NET Framework, English interface) for Freedom UI, and against
+Creatio 8.3.0 (.NET Framework, Ukrainian interface) for Classic UI pages served inside the Shell.
+Other versions are untested; see [docs/dsl.md](docs/dsl.md) for the one place the interface language
+matters to Freedom UI analysis.
 
 ## Getting Started
 
@@ -69,7 +70,9 @@ dotnet run --project src/CreatioAutoTests.Cli -- `
     analyse "/0/Shell/#Card/Contacts_FormPage/edit/<recordId>" --name ContactForm --list
 ```
 
-Then write an `.act` file under [Cases](Cases) and run it.
+Then write an `.act` file under [Cases](Cases) and run it. `.act` files are yours and stay out of
+git (they name your environment's schemas); the bundled examples ship as `.act.exp`, which the
+runner ignores - copy one to `.act` to run it.
 
 ## Running
 
@@ -92,16 +95,41 @@ dotnet run --project src/CreatioAutoTests.Cli -- --analyse-only
 
 | Layer | Responsibility |
 | --- | --- |
-| Frontend | Freedom UI element implementations |
+| Frontend | Element implementations: Freedom UI, and Classic UI under `Frontend/Classic` |
+| Runtime | Per-generation page readiness: how the framework knows a page has finished rendering |
 | Validation | Static command and target checking |
 | Commands | Reflection-discovered DSL keywords |
 | Configuration and session | Files, catalog, authentication, browser context |
 | Execution | Parsing, plans, and command execution |
 | Runner | CLI and NUnit-facing orchestration |
-| Analysis | Reads live Freedom UI pages and writes their per-page configuration |
+| Analysis | Reads a live page - Freedom UI or Classic UI, the address picks the analyser - and writes its per-page configuration |
 | Process cases | The backend tier: `start`, `check-result`, `check-record` over the process engine service and OData, no browser |
 
 The first pass parses and validates a complete case. Only a valid plan reaches the second pass, which drives Playwright. When analysis is selected, analysis scripts run first and the catalog is reloaded before cases start. See [docs/dsl.md](docs/dsl.md) for the language reference.
+
+## Classic UI
+
+A page file says which generation it is, and the same case syntax drives both:
+
+```jsonc
+{ "name": "OrderClassic", "url": "/0/Shell/#CardModuleV2/UsrOrder1Page", "type": "ClassicUI", "schema": "UsrOrder1Page",
+  "elements": [ { "code": "UsrType", "label": "Type", "type": "Lookup", "name": "LOOKUPceebb14a-c7fc-443b-a434-6d47069519d4" } ] }
+```
+
+```act
+use Supervisor
+open OrderClassic for 27bcc84f-727d-4314-8b0e-99b286253a27
+check UsrType is required
+set UsrType "Spare parts"
+check-value UsrType eq "Spare parts"
+```
+
+Classic controls are addressed by the ids Creatio builds from the page schema and the element's
+name in the schema; typed values are read from the page's view model, so dates and numbers compare
+as ISO and invariant text whatever the user's culture shows. `analyse` describes a Classic page
+when given a `#CardModuleV2/<Schema>` address, walking its tabs and naming each field by the column
+it binds; `schemas --classic` lists the instance's Classic pages. See [docs/dsl.md](docs/dsl.md),
+"Classic UI".
 
 ## Process Tests
 

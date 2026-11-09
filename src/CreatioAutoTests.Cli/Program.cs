@@ -1,3 +1,4 @@
+using CreatioAutoTests.Frontend;
 using CreatioAutoTests.Runner;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -79,10 +80,10 @@ public static class Program
             ? SchemaDiscoveryService.ListPageSuffix
             : SchemaDiscoveryService.FormPageSuffix;
 
-        var schemas = await provider
-            .GetRequiredService<SchemaDiscoveryService>()
-            .FindAsync(term, suffix)
-            .ConfigureAwait(false);
+        var discovery = provider.GetRequiredService<SchemaDiscoveryService>();
+        var schemas = args.Contains("--classic")
+            ? await discovery.FindClassicAsync(term).ConfigureAwait(false)
+            : await discovery.FindAsync(term, suffix).ConfigureAwait(false);
 
         if (schemas.Count == 0)
         {
@@ -125,6 +126,7 @@ public static class Program
 
         Console.WriteLine();
         Console.WriteLine("page:   " + analysis.PageName);
+        Console.WriteLine("type:   " + analysis.Generation.Name() + (analysis.Schema is null ? string.Empty : " (" + analysis.Schema + ")"));
         Console.WriteLine("url:    " + analysis.Url);
         Console.WriteLine("record: " + (analysis.RecordId ?? "(none)"));
         Console.WriteLine("found:  " + analysis.Elements.Count + " addressable control(s)");
@@ -275,8 +277,10 @@ public static class Program
         Console.WriteLine();
         Console.WriteLine("  schemas [<text>]        list this instance's Freedom UI page schemas");
         Console.WriteLine("      --list-pages         list section pages instead of form pages");
+        Console.WriteLine("      --classic            list Classic UI pages (…Page, …PageV2) instead");
         Console.WriteLine();
         Console.WriteLine("  analyse \"<page path>\"   describe a page and write Configuration/pages/<Name>.json");
+        Console.WriteLine("                          a #CardModuleV2/<Schema> address is analysed as a Classic UI page");
         Console.WriteLine("      --name <name>        page name for the DSL; defaults to the schema in the path");
         Console.WriteLine("      --user <username>    user to open the page as; defaults to the first configured");
         Console.WriteLine("      --drop-missing       remove configured entries the page no longer renders");

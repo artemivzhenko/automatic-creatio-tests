@@ -48,8 +48,7 @@ public sealed class CreatioAuthenticator : IDisposable
             return cached;
         }
 
-        var credentials = _environment.Users.FirstOrDefault(
-            u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
+        var credentials = _environment.Users.FirstOrDefault(u => u.Matches(username));
 
         if (credentials is null)
         {

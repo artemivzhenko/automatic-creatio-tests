@@ -1,6 +1,7 @@
 using CreatioAutoTests.Analysis;
 using CreatioAutoTests.Configuration;
 using CreatioAutoTests.Execution;
+using CreatioAutoTests.Frontend;
 using CreatioAutoTests.Validation.Validators;
 using Microsoft.Extensions.Logging;
 
@@ -22,13 +23,15 @@ namespace CreatioAutoTests.Commands;
 public sealed class AnalyseCommand : ICommand
 {
     private readonly PageAnalyzer _analyzer;
+    private readonly ClassicPageAnalyzer _classicAnalyzer;
     private readonly PageConfigWriter _writer;
     private readonly ConfigurationPaths _paths;
 
     /// <summary>Initializes page analysis and configuration-writing services for the command.</summary>
-    public AnalyseCommand(PageAnalyzer analyzer, PageConfigWriter writer, ConfigurationPaths paths)
+    public AnalyseCommand(PageAnalyzer analyzer, ClassicPageAnalyzer classicAnalyzer, PageConfigWriter writer, ConfigurationPaths paths)
     {
         _analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
+        _classicAnalyzer = classicAnalyzer ?? throw new ArgumentNullException(nameof(classicAnalyzer));
         _writer = writer ?? throw new ArgumentNullException(nameof(writer));
         _paths = paths ?? throw new ArgumentNullException(nameof(paths));
     }
@@ -42,10 +45,12 @@ public sealed class AnalyseCommand : ICommand
         string pageName;
         string url;
         string? recordId;
+        UiGeneration generation;
+        string? schema;
 
         if (address is null)
         {
-            // No address: describe whatever 'open' left on screen.
+            // No address: describe whatever 'open' left on screen, as the generation it is configured as.
             var openPage = session.CurrentPage
                            ?? throw new CommandFailedException("No page is open to analyse.");
 
@@ -53,6 +58,8 @@ public sealed class AnalyseCommand : ICommand
             pageName = openPage;
             url = definition?.Url ?? string.Empty;
             recordId = null;
+            generation = definition?.Generation ?? UiGeneration.FreedomUI;
+            schema = definition?.Schema;
         }
         else
         {
@@ -60,13 +67,19 @@ public sealed class AnalyseCommand : ICommand
             pageName = context.Command.ArgumentCount > 1 ? context.ResolveValue(1) : path.DefaultPageName;
             url = path.Url;
             recordId = path.RecordId;
+            generation = path.Generation;
+            schema = path.Schema;
 
             await session.NavigateAsync(path.Raw, cancellationToken).ConfigureAwait(false);
         }
 
-        var analysis = await _analyzer
-            .AnalyzeAsync(session.RequirePage(), pageName, url, recordId, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        var analysis = generation == UiGeneration.ClassicUI
+            ? await _classicAnalyzer
+                .AnalyzeAsync(session.RequirePage(), pageName, url, recordId, schema, cancellationToken: cancellationToken)
+                .ConfigureAwait(false)
+            : await _analyzer
+                .AnalyzeAsync(session.RequirePage(), pageName, url, recordId, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
         var result = _writer.Write(analysis, _paths.PagesDirectory, keepMissing: true);
 

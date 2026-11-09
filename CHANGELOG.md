@@ -8,6 +8,47 @@ All notable changes to this project are recorded here. The format follows
 
 ### Added
 
+- **Classic UI.** A page file may declare `"type": "ClassicUI"` with the page `schema`, and the same
+  DSL then drives a Classic (7.x) page inside the 8.x Shell. Element types keep their names --
+  `Text`, `RichText`, `Integer`, `Decimal`, `Boolean`, `Date`, `Time`, `DateTime`, `Lookup`,
+  `Button`, `Tab` -- and exist once per generation; the page's type picks the class, and a
+  Freedom-only type on a Classic page is refused when the configuration loads. Classic controls are
+  found by the ids Creatio builds from schema, element name and control class, with `name` in the
+  page file when the schema's name differs from the code (section-wizard pages name fields
+  `LOOKUP<guid>`). Typed fields read the page's view model through `Ext.getCmp`, so numbers and
+  dates come back invariant and ISO whatever the user's culture shows, and dates are written in the
+  culture the page reports. A `Lookup` covers the drop-down and the searchable lookup; a `DateTime`
+  writes its date and time controls; a `Tab` is addressed by its schema name and resolved to the
+  header through `TabsCollection`; a `Button` may belong to a detail. Verified on Creatio 8.3.0,
+  Ukrainian interface, against a wizard-built order page of some hundred fields.
+- **Classic tabs, details and the stage bar.** `TabPanel` is the tab panel as one element whose
+  value is the open tab's caption (`set Tabs "Products"`). `Detail` is a detail by its schema name:
+  its value is the row count read from the grid's collection, `check X columns` compares the
+  rendered captions, `check X is editable` tells a configuration grid from a plain one, and its
+  buttons are `Button` elements with the `detail` option. `CasesBar` is the DCM stage bar of the
+  actions dashboard: the value is the committed stage from the page's stage column, `set` clicks a
+  stage or picks a sub-stage from its parent's menu, answers the confirmation the page may ask and
+  waits for the save Classic performs on a stage change. The stage bar and the details wait for
+  their own module to finish loading, which happens after the page's fields.
+- **Rows.** `check-row`, `select-row` and `delete-row` address a row of a listing element by its
+  cell values, named by column captions (`IRowed`); the Classic `Detail` offers them, and takes
+  `add-record` when it edits in place: the row is filled through the editors it renders and saved
+  with its own save action. A detail saves its own records, so both writes reach the database at
+  once. `on <page>` rebinds the open page after Creatio navigated by itself. A Classic `Button` with
+  `isSave` waits for the save to go through and reports the message box when it does not.
+- **Classic analyser.** `analyse` given a `#CardModuleV2/<Schema>` address describes a Classic page:
+  each control is asked, through its Ext component, which column it binds and what type the column
+  is, so fields are coded by column with the schema name kept as `name`, a DateTime column's two
+  controls fold into one element, details come with their columns and buttons, the tab panel and
+  the stage bar with their captions. Every tab is opened in turn and the original one restored; a
+  header field met on every tab is recorded once. `SaveButton` and `DiscardChangesButton` are
+  always written, since a clean page never renders them. `schemas --classic` lists the Classic pages.
+- **`IPageRuntime`.** The one page-level difference between the generations -- how to tell that a
+  page has finished rendering -- lives behind an interface with a Freedom and a Classic
+  implementation; the session picks one by the page's type, or by the address for `analyse`.
+- **User aliases.** A user in `creatio.env.config.json` may carry a `Name`, and a case writes that
+  after `use` instead of the login, so the bundled cases run against any environment.
+
 - **Process cases.** A backend tier kept apart from the page cases: scripts under
   `ProcessCases/` (`ProcessCasesFolders`) start a business process over the process engine
   service (`start <process> [with Param=Value;...]`), assert its result parameters
@@ -55,6 +96,8 @@ All notable changes to this project are recorded here. The format follows
 
 ### Fixed
 
+- `clear` refuses a read-only field up front, as `set` does, instead of waiting out the element
+  timeout on an input that will never take the keystroke.
 - Grid editability is read from the footer row Creatio adds for appending a record, not from the
   absence of a per-cell editing-disabled marker. That marker means one column is read-only, so an
   editable grid holding a calculated or image column was reported as not editable.

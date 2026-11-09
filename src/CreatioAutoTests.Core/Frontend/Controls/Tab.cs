@@ -11,7 +11,7 @@ namespace CreatioAutoTests.Frontend.Controls;
 /// capability they need rather than a list of concrete classes.
 /// </summary>
 [UiElement("Tab", HostTag = "crt-tab-panel-header-item")]
-public sealed class Tab : UiElementBase, IClickable
+public sealed class Tab : FreedomElementBase, IClickable
 {
     private const string HeaderSelector = ".tab-header";
     private const string LabelSelector = ".tab-label";

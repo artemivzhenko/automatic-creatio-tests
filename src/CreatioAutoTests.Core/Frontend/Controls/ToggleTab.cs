@@ -19,7 +19,7 @@ namespace CreatioAutoTests.Frontend.Controls;
     HostTag = "crt-button-toggle-group",
     ValueKind = ValueKind.Tab,
     Options = typeof(ToggleTabOptions))]
-public sealed class ToggleTab : UiElementBase, IValueElement
+public sealed class ToggleTab : FreedomElementBase, IValueElement
 {
     /// <summary>
     /// One tab of the group. The caption lives in the marker rather than in the text because Creatio

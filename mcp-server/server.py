@@ -100,7 +100,8 @@ def dsl() -> str:
 
 @mcp.tool()
 def cases(folder: str = "") -> str:
-    """Lists the .act files with their first comment line. folder: Cases, ProcessCases, Analysis or empty for all."""
+    """Lists the .act files with their first comment line, and the bundled .act.exp examples (not run, copy one to .act).
+    folder: Cases, ProcessCases, Analysis or empty for all."""
     folders = [folder] if folder else ["Cases", "ProcessCases", "Analysis"]
     lines = []
     for name in folders:
@@ -108,19 +109,20 @@ def cases(folder: str = "") -> str:
         if not directory.is_dir():
             continue
         lines.append(f"{name}/")
-        for path in sorted(directory.glob("*.act")):
-            lines.append(f"  {path.name:<34} {_first_comment(path)}")
+        for path in sorted(list(directory.glob("*.act")) + list(directory.glob("*.act.exp"))):
+            lines.append(f"  {path.name:<34} {_first_comment(path)}" + ("  [example]" if path.name.endswith(".exp") else ""))
     return "\n".join(lines) or "no cases found"
 
 
 @mcp.tool()
 def case(name: str) -> str:
-    """The text of one case: a file name with or without .act, searched in Cases, ProcessCases and Analysis."""
-    stem = name[:-4] if name.endswith(".act") else name
+    """The text of one case or example: a file name with or without .act / .act.exp, searched in Cases, ProcessCases and Analysis."""
+    stem = name.removesuffix(".exp").removesuffix(".act")
     for folder in ("Cases", "ProcessCases", "Analysis"):
-        path = ROOT / folder / f"{stem}.act"
-        if path.is_file():
-            return _read(path)
+        for suffix in (".act", ".act.exp"):
+            path = ROOT / folder / f"{stem}{suffix}"
+            if path.is_file():
+                return _read(path)
     return f"no case named {name}"
 
 

@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(paths ?? new ConfigurationPaths());
         services.AddSingleton<UiElementFactory>();
         services.AddSingleton<PageAnalyzer>();
+        services.AddSingleton<ClassicPageAnalyzer>();
         services.AddSingleton<PageConfigWriter>();
         services.AddSingleton<PageAnalysisService>();
         services.AddSingleton<CreatioODataClient>();

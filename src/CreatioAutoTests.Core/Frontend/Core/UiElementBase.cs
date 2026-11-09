@@ -1,13 +1,14 @@
 using CreatioAutoTests.Configuration;
-using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
 namespace CreatioAutoTests.Frontend;
 
 /// <summary>
-/// Shared behaviour of every Freedom UI element: resolve the host tag by element-name,
-/// report presence and read the rendered caption.
+/// Shared behaviour of every element whatever its UI generation: resolve the root locator,
+/// report presence and read the rendered caption. How the root is found is the one thing the
+/// generations disagree on, so <see cref="BuildSelector"/> is left to <see cref="FreedomElementBase"/>
+/// and <see cref="Classic.ClassicElementBase"/>; everything above it is identical.
 /// </summary>
 public abstract class UiElementBase : IUiElement, IExistable, ILabeled
 {
@@ -25,7 +26,7 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
     /// <summary>Page that supplies locators for this element.</summary>
     protected IPage Page => Context.Page;
 
-    /// <summary>Static definition that provides the element-name and expected label.</summary>
+    /// <summary>Static definition that provides the code and expected label.</summary>
     protected ElementDefinition Definition => Context.Definition;
 
     /// <summary>Element-scoped diagnostic logger.</summary>
@@ -34,68 +35,30 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
     /// <summary>Configured wait budget for controls expected to be present.</summary>
     protected int TimeoutMs => Context.Settings.ElementTimeoutMs;
 
-    /// <summary>Value of the Freedom UI host's <c>element-name</c> attribute.</summary>
+    /// <summary>Code by which the DSL addresses the element on its page.</summary>
     public string Code => Definition.Code;
 
     /// <summary>Configured caption checked when presence is asserted.</summary>
     public string Label => Definition.Label;
 
     /// <summary>
-    /// Freedom UI custom tag that hosts this element, taken from the type's [UiElement] attribute.
-    /// A base class shared by several types leaves it there; only a type with no attribute of its
-    /// own, which cannot be registered anyway, would need to override this.
+    /// CSS selector of the element's root. Elements are addressed strictly by their configured
+    /// identity; the caption is verified separately by 'check X exists' so that renaming a caption in
+    /// Creatio produces a readable failure instead of "element not found".
     /// </summary>
-    protected virtual string HostTag => HostTagOf(GetType());
+    protected abstract string BuildSelector();
 
-    private static readonly Dictionary<Type, string> HostTagCache = new();
-
-    /// <summary>Reads and caches the host tag declared by a registered element implementation.</summary>
-    internal static string HostTagOf(Type type)
-    {
-        lock (HostTagCache)
-        {
-            if (HostTagCache.TryGetValue(type, out var cached))
-            {
-                return cached;
-            }
-
-            var attribute = type.GetCustomAttribute<UiElementAttribute>();
-            var tag = attribute?.HostTag ?? string.Empty;
-
-            if (string.IsNullOrWhiteSpace(tag))
-            {
-                throw new InvalidOperationException(
-                    type.FullName + " does not declare a HostTag on its [UiElement] attribute.");
-            }
-
-            HostTagCache[type] = tag;
-            return tag;
-        }
-    }
-
-    /// <summary>
-    /// Elements are addressed strictly by element-name. The caption is verified separately by
-    /// 'check X exists' so that renaming a caption in Creatio produces a readable failure
-    /// instead of "element not found".
-    /// </summary>
-    protected virtual string BuildSelector() => HostTag + "[element-name=\"" + Code + "\"]";
+    /// <summary>How the element is located, for diagnostics: a host tag, a DOM id.</summary>
+    protected virtual string LocatorDescription => BuildSelector();
 
     /// <summary>Host locator, cached because every element operation starts from the same control.</summary>
     protected ILocator Root => _root ??= Page.Locator(BuildSelector()).First;
 
-    /// <summary>
-    /// Input rendered by Angular Material. Creatio 8.3 emits <c>mat-mdc-input-element</c>; older
-    /// builds emit <c>mat-input-element</c>. Matching both keeps one selector working across
-    /// versions, and getting this wrong is silent: the host resolves, the value never does.
-    /// </summary>
-    protected const string MaterialInputSelector =
-        "input.mat-mdc-input-element, input.mat-input-element";
-
     /// <summary>Element that carries the value. Overridden per control type.</summary>
-    protected virtual ILocator ValueLocator => Root.Locator("input, textarea");
+    protected abstract ILocator ValueLocator { get; }
 
     /// <summary>Element that carries the caption. Overridden per control type.</summary>
-    protected virtual ILocator LabelLocator => Root.Locator(".crt-input-label");
+    protected abstract ILocator LabelLocator { get; }
 
     /// <summary>Checks presence using the normal configured element timeout.</summary>
     public Task<bool> ExistsAsync(CancellationToken cancellationToken = default) =>
@@ -116,12 +79,12 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
         }
         catch (TimeoutException)
         {
-            Logger.LogDebug("Element {Code} ({Tag}) was not visible within {Timeout} ms.", Code, HostTag, timeoutMs);
+            Logger.LogDebug("Element {Code} ({Where}) was not visible within {Timeout} ms.", Code, LocatorDescription, timeoutMs);
             return false;
         }
         catch (PlaywrightException ex)
         {
-            Logger.LogDebug(ex, "Element {Code} ({Tag}) lookup failed.", Code, HostTag);
+            Logger.LogDebug(ex, "Element {Code} ({Where}) lookup failed.", Code, LocatorDescription);
             return false;
         }
     }
@@ -168,7 +131,68 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
     protected InvalidOperationException NotFound()
     {
         return new InvalidOperationException(
-            "Element '" + Code + "' (" + HostTag + ") was not found on page '" + Definition.Page + "'.");
+            "Element '" + Code + "' (" + LocatorDescription + ") was not found on page '" + Definition.Page + "'.");
+    }
+
+    /// <summary>
+    /// Timeout for probing an attribute. These calls ask "is this flag set", so a control that has
+    /// no such sub-element must answer quickly rather than block for the full element timeout.
+    /// </summary>
+    protected const int ProbeTimeoutMs = 1000;
+
+    /// <summary>
+    /// Reads an attribute, treating "the element is not there" as "the flag is not set".
+    /// Playwright signals a missing element with TimeoutException rather than PlaywrightException,
+    /// so both have to be caught: a read-only Creatio field often renders no input at all.
+    /// </summary>
+    protected static async Task<string?> SafeAttributeAsync(ILocator locator, string name)
+    {
+        try
+        {
+            return await locator
+                .GetAttributeAsync(name, new LocatorGetAttributeOptions { Timeout = ProbeTimeoutMs })
+                .ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            return null;
+        }
+        catch (PlaywrightException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Probes the disabled state, reporting false when the element is not present.</summary>
+    protected static async Task<bool> SafeIsDisabledAsync(ILocator locator)
+    {
+        try
+        {
+            return await locator
+                .IsDisabledAsync(new LocatorIsDisabledOptions { Timeout = ProbeTimeoutMs })
+                .ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
+        catch (PlaywrightException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Writes a value into an input Creatio keeps hidden and raises the events the page listens to.</summary>
+    protected static Task SetValueThroughDomAsync(ILocator input, string value)
+    {
+        const string script = @"(el, v) => {
+            if (!el) { return; }
+            el.value = v ?? '';
+            el.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+        }";
+
+        return input.EvaluateAsync(script, value);
     }
 
     /// <summary>Identifies the concrete element and its configuration code in diagnostics.</summary>

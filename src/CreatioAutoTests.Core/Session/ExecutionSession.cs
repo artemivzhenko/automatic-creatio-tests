@@ -2,6 +2,7 @@ using CreatioAutoTests.Configuration;
 using CreatioAutoTests.Execution;
 using CreatioAutoTests.Frontend;
 using CreatioAutoTests.Frontend.Registry;
+using CreatioAutoTests.Frontend.Runtime;
 using CreatioAutoTests.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
@@ -132,11 +133,9 @@ public sealed class ExecutionSession : IExecutionSession, IAsyncDisposable
             throw new InvalidOperationException("Page '" + pageName + "' is not configured.");
         }
 
-        var url = string.IsNullOrWhiteSpace(recordId) ? page.Url : page.Url.TrimEnd('/') + "/edit/" + recordId;
-        if (!url.StartsWith('/'))
-        {
-            url = "/" + url;
-        }
+        // The page's generation decides how the framework waits for it to be built.
+        var runtime = PageRuntimes.For(page);
+        var url = runtime.BuildUrl(page.Url, recordId);
 
         await ClosePageAsync().ConfigureAwait(false);
 
@@ -150,8 +149,7 @@ public sealed class ExecutionSession : IExecutionSession, IAsyncDisposable
             Timeout = Settings.PageLoadTimeoutMs
         }).ConfigureAwait(false);
 
-        await WaitForLoadingOverlayAsync().ConfigureAwait(false);
-        await WaitForRenderedAsync().ConfigureAwait(false);
+        await runtime.WaitForReadyAsync(_page, page, Settings, _logger, cancellationToken).ConfigureAwait(false);
 
         CurrentPage = page.Name;
         _logger.LogDebug("Opened {Page} at {Url}.", page.Name, url);
@@ -179,8 +177,9 @@ public sealed class ExecutionSession : IExecutionSession, IAsyncDisposable
             Timeout = Settings.PageLoadTimeoutMs
         }).ConfigureAwait(false);
 
-        await WaitForLoadingOverlayAsync().ConfigureAwait(false);
-        await WaitForRenderedAsync().ConfigureAwait(false);
+        // No configured page, so the generation is read off the address itself.
+        await PageRuntimes.ForAddress(url)
+            .WaitForReadyAsync(_page, null, Settings, _logger, cancellationToken).ConfigureAwait(false);
 
         // The address is not a configured page, so there is no page name to report.
         CurrentPage = null;
@@ -195,13 +194,13 @@ public sealed class ExecutionSession : IExecutionSession, IAsyncDisposable
             throw new InvalidOperationException("Nothing is open, so there is no page to adopt.");
         }
 
-        if (!Catalog.PageExists(pageName))
+        if (!Catalog.TryGetPage(pageName, out var page))
         {
             throw new InvalidOperationException("Page '" + pageName + "' is not configured.");
         }
 
-        await WaitForLoadingOverlayAsync().ConfigureAwait(false);
-        await WaitForRenderedAsync().ConfigureAwait(false);
+        await PageRuntimes.For(page)
+            .WaitForReadyAsync(_page, page, Settings, _logger, cancellationToken).ConfigureAwait(false);
 
         CurrentPage = pageName;
         _logger.LogDebug("Current page is now treated as {Page} ({Url}).", pageName, _page.Url);
@@ -216,80 +215,8 @@ public sealed class ExecutionSession : IExecutionSession, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(target);
 
-        return _factory.Create(target.Definition, RequirePage(), Settings);
-    }
-
-    /// <summary>Waits out the Creatio splash overlay; absence of the overlay is success too.</summary>
-    private async Task WaitForLoadingOverlayAsync()
-    {
-        if (_page is null)
-        {
-            return;
-        }
-
-        try
-        {
-            await _page.Locator("#loading-animation").WaitForAsync(new LocatorWaitForOptions
-            {
-                State = WaitForSelectorState.Detached,
-                Timeout = Settings.PageLoadTimeoutMs
-            }).ConfigureAwait(false);
-        }
-        catch (TimeoutException)
-        {
-            _logger.LogWarning("Creatio loading overlay was still visible after {Timeout} ms.",
-                Settings.PageLoadTimeoutMs);
-        }
-        catch (PlaywrightException ex)
-        {
-            _logger.LogDebug(ex, "Waiting for the loading overlay failed.");
-        }
-    }
-
-    /// <summary>
-    /// Waits until the page stops adding controls.
-    ///
-    /// The loading overlay goes away long before Freedom UI has rendered the form, so 'open'
-    /// followed immediately by a command used to look at a page that was still empty. Two identical
-    /// counts in a row mean the render has settled.
-    /// </summary>
-    private async Task WaitForRenderedAsync()
-    {
-        if (_page is null)
-        {
-            return;
-        }
-
-        const int pollMs = 250;
-        const int maxWaitMs = 10_000;
-
-        var deadline = DateTime.UtcNow.AddMilliseconds(maxWaitMs);
-        var previous = -1;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            int current;
-            try
-            {
-                current = await _page.EvaluateAsync<int>(
-                    "() => document.querySelectorAll('[element-name]').length").ConfigureAwait(false);
-            }
-            catch (PlaywrightException)
-            {
-                return;
-            }
-
-            if (current > 0 && current == previous)
-            {
-                _logger.LogDebug("Page settled with {Count} control(s).", current);
-                return;
-            }
-
-            previous = current;
-            await _page.WaitForTimeoutAsync(pollMs).ConfigureAwait(false);
-        }
-
-        _logger.LogWarning("Page was still rendering after {Timeout} ms; continuing anyway.", maxWaitMs);
+        Catalog.TryGetPage(target.Definition.Page, out var pageDefinition);
+        return _factory.Create(target.Definition, pageDefinition, RequirePage(), Settings);
     }
 
     private async Task ClosePageAsync()

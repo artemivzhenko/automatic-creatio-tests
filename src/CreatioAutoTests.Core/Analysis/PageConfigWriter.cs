@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CreatioAutoTests.Configuration;
+using CreatioAutoTests.Frontend;
 using Microsoft.Extensions.Logging;
 
 namespace CreatioAutoTests.Analysis;
@@ -47,7 +48,7 @@ public sealed class PageConfigWriter
         PageAnalysis analysis,
         string pagesDirectory,
         bool keepMissing = false,
-        string pageType = "FreedomUI")
+        string? pageType = null)
     {
         ArgumentNullException.ThrowIfNull(analysis);
 
@@ -84,7 +85,9 @@ public sealed class PageConfigWriter
         {
             Name = analysis.PageName,
             Url = analysis.Url,
-            Type = pageType,
+            Type = pageType ?? analysis.Generation.Name(),
+            // Null rather than empty so that a Freedom UI page file carries no "schema" line at all.
+            Schema = string.IsNullOrWhiteSpace(analysis.Schema) ? null : analysis.Schema,
             Elements = elements,
         };
 
@@ -126,6 +129,24 @@ public sealed class PageConfigWriter
         if (element.Tabs is { Count: > 0 })
         {
             extra["tabs"] = JsonSerializer.SerializeToElement(element.Tabs);
+        }
+
+        if (element.Subvalues is { Count: > 0 })
+        {
+            extra["subvalues"] = JsonSerializer.SerializeToElement(element.Subvalues);
+        }
+
+        // Classic UI: the schema name when the code is the friendlier column name, and the detail a
+        // button belongs to. Both are identity, so they are written even when a page file is regenerated.
+        if (!string.IsNullOrWhiteSpace(element.Name) &&
+            !string.Equals(element.Name, element.Code, StringComparison.Ordinal))
+        {
+            extra["name"] = JsonSerializer.SerializeToElement(element.Name);
+        }
+
+        if (!string.IsNullOrWhiteSpace(element.Detail))
+        {
+            extra["detail"] = JsonSerializer.SerializeToElement(element.Detail);
         }
 
         if (extra.Count > 0)

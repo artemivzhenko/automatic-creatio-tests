@@ -67,6 +67,45 @@ public sealed class SchemaDiscoveryService
     }
 
     /// <summary>
+    /// Finds Classic UI page schemas: client schemas named <c>...Page</c>, <c>...PageV2</c> or
+    /// <c>...1Page</c>, which is how the section wizard and the platform name them. Freedom UI form
+    /// and list pages are excluded by their suffixes.
+    /// </summary>
+    /// <param name="term">Substring to match, case-insensitively; all schemas when null.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    public async Task<IReadOnlyList<PageSchema>> FindClassicAsync(
+        string? term = null,
+        CancellationToken cancellationToken = default)
+    {
+        var rows = await _client
+            .QueryAsync(
+                "SysSchema",
+                select: new[] { "Name" },
+                filter: "contains(Name,'Page')",
+                top: 5000,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        var names = rows
+            .Select(r => r.TryGetProperty("Name", out var n) ? n.GetString() : null)
+            .Where(n => !string.IsNullOrWhiteSpace(n))
+            .Select(n => n!)
+            .Where(IsClassicPageName)
+            .Distinct(StringComparer.Ordinal)
+            .Where(n => term is null || n.Contains(term, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(n => n, StringComparer.Ordinal)
+            .ToArray();
+
+        return names.Select(n => new PageSchema(n, PagePath.ClassicCardRoute + n + "/edit/<recordId>")).ToArray();
+    }
+
+    /// <summary>Whether a schema name is spelled the way Classic UI pages are.</summary>
+    internal static bool IsClassicPageName(string name) =>
+        !name.Contains('_')
+        && (name.EndsWith("Page", StringComparison.Ordinal) || name.EndsWith("PageV2", StringComparison.Ordinal))
+        && !name.StartsWith("Base", StringComparison.Ordinal);
+
+    /// <summary>
     /// Builds the address that opens a schema. A form page needs a record; a list page does not.
     /// </summary>
     /// <param name="schema">Schema name.</param>

@@ -2,6 +2,7 @@ using CreatioAutoTests.Analysis;
 using CreatioAutoTests.Commands;
 using CreatioAutoTests.Configuration;
 using CreatioAutoTests.Execution;
+using CreatioAutoTests.Frontend;
 using CreatioAutoTests.Frontend.Registry;
 using CreatioAutoTests.Tests.Support;
 using CreatioAutoTests.Validation;
@@ -73,14 +74,14 @@ public sealed class HostTagIndexTests
     private readonly HostTagIndex _index = new(UiElementRegistry.Discover());
 
     [Test]
-    public void Every_registered_element_declares_the_tag_it_lives_on()
+    public void Every_registered_Freedom_element_declares_the_tag_it_lives_on()
     {
         var registry = UiElementRegistry.Discover();
 
         Assert.That(
-            registry.Registrations.Where(r => string.IsNullOrWhiteSpace(r.HostTag)).Select(r => r.TypeName),
+            registry.RegistrationsOf(UiGeneration.FreedomUI).Where(r => string.IsNullOrWhiteSpace(r.HostTag)).Select(r => r.TypeName),
             Is.Empty,
-            "an element type without a HostTag cannot be found by page analysis");
+            "a Freedom UI element type without a HostTag cannot be found by page analysis");
     }
 
     [Test]

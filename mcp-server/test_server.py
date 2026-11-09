@@ -11,9 +11,9 @@ import server  # noqa: E402
 def test_reads():
     assert "## Process cases" in server.dsl()
     listing = server.cases()
-    assert "Cases/" in listing and ".act" in listing
-    first_case = next(p for p in sorted((server.ROOT / "Cases").glob("*.act")))
-    assert "use " in server.case(first_case.stem)
+    assert "Cases/" in listing and ".act.exp" in listing and "[example]" in listing
+    first_case = next(p for p in sorted((server.ROOT / "Cases").glob("*.act.exp")))
+    assert "use " in server.case(first_case.name.removesuffix(".act.exp")) and "use " in server.case(first_case.name)
     assert server.case("nope").startswith("no case")
     first_page = next(p for p in sorted((server.ROOT / "Configuration" / "pages").glob("*.json")))
     assert f'"name": "{first_page.stem}"' in server.page_config(first_page.stem)

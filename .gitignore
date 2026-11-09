@@ -47,23 +47,9 @@ mcp-server/.venv/
 __pycache__/
 
 # Cases, analysis scripts and page/process files are written against someone's own environment
-# and name its schemas, so they stay local. Only the bundled examples below are tracked; to add
-# one, add a negation line next to the others.
-Cases/*.act
-!Cases/all-value-types.act
-!Cases/contact-form-baseline.act
-!Cases/contact-form-tabs.act
-!Cases/grid-add-record.act
-!Cases/grid-columns.act
-!Cases/grid-detail.act
-!Cases/lookup-goto.act
-!Cases/readonly-presence.act
-!Cases/toggle-tab.act
-ProcessCases/*.act
-Analysis/*.act
-!Analysis/discover-contact-form.act
-!Analysis/discover-lead-form.act
-!Analysis/discover-usr-test-form.act
+# and name its schemas, so they stay local: no .act file is ever tracked. Bundled examples use
+# the .act.exp extension - the runner ignores them; copy one to .act to run it.
+*.act
 Configuration/pages/*.json
 !Configuration/pages/AccountForm.json
 !Configuration/pages/ContactForm.json

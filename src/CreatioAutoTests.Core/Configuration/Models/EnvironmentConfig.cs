@@ -31,14 +31,29 @@ public sealed class EnvironmentConfig
 /// <summary>Login and password of a single Creatio user.</summary>
 public sealed class UserCredentials
 {
-    /// <summary>Configured name used by scripts to select this credential pair.</summary>
+    /// <summary>Login submitted to Creatio.</summary>
     public string Username { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional name scripts use in <c>use</c> instead of the login. A case says <c>use Supervisor</c>
+    /// and keeps working when the environment behind it logs in as <c>jane@example.com</c>: the
+    /// alias is part of the case, the login is part of the environment.
+    /// </summary>
+    public string? Name { get; set; }
+
+    /// <summary>What a script writes after <c>use</c>: the alias when there is one, else the login.</summary>
+    public string DisplayName => string.IsNullOrWhiteSpace(Name) ? Username : Name.Trim();
+
+    /// <summary>Whether a <c>use</c> argument refers to this user, by alias or by login.</summary>
+    public bool Matches(string name) =>
+        string.Equals(DisplayName, name, StringComparison.OrdinalIgnoreCase)
+        || string.Equals(Username, name, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Password submitted when authenticating as this configured user.</summary>
     public string Password { get; set; } = string.Empty;
 
     /// <summary>Formats credentials as the safe user name rather than exposing the password.</summary>
-    public override string ToString() => Username;
+    public override string ToString() => DisplayName;
 }
 
 /// <summary>Root of creatio.site.config.json: service paths shared by all environments.</summary>

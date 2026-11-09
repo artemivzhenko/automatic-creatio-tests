@@ -25,6 +25,10 @@ Write one command per line. Blank lines and lines beginning with `#` are ignored
 | start | `start <process> [with Param=Value;Param=Value]` | none (a configured process) | `start UsrOrder_Process with Amount=10` |
 | check-result | `check-result <parameter> eq|ne|gt|ge|lt|le|contains|startswith|endswith <value>` | none (an output of the last started process) | `check-result Verdict eq "big"` |
 | check-record | `check-record <object> Column=Value;Column=Value [not] exists` | none (read over OData) | `check-record UsrOrder UsrName=Order 1 exists` |
+| check-row | `check-row <code> Column=Value;Column=Value [not] exists` | `IRowed` | `check-row Products Product=Pump;Quantity=2 exists` |
+| select-row | `select-row <code> Column=Value;Column=Value` | `IRowed` | `select-row Products Product=Pump` |
+| delete-row | `delete-row <code> Column=Value;Column=Value` | `IRowed` | `delete-row Products Product=Pump` |
+| on | `on <page>` | none (a configured page) | `on ProductClassic` |
 
 `check <code> exists` also verifies that the rendered caption matches the `label` in the page file under `Configuration/pages`; required and readonly are never asserted implicitly, they are separate lines.
 
@@ -59,6 +63,17 @@ The record is entered in place and reaches the database when the page is saved, 
 written with `set` does -- `add-record` saves nothing on its own. Note that Creatio replaces a page's
 Close button with Save and Cancel as soon as the page has unsaved changes, so those two buttons are
 only addressable after something has changed.
+
+`check-row`, `select-row` and `delete-row` address one row of an element that lists records by the
+values in its cells, named by the column captions as `check-record` names them for OData. Nothing is
+ever addressed by position. `check-row` asserts presence, `select-row` clicks the row, and
+`delete-row` deletes it through the element's own delete action and answers the confirmation;
+columns are checked against the element's `columns` during validation when the page file declares
+them. Today the Classic `Detail` offers rows.
+
+`on <page>` says which configured page the browser is on after Creatio navigated by itself, after a
+button that opened another record or a link that was followed. Nothing is navigated: the open page
+is rebound, waited for, and the lines below resolve their codes against that page.
 
 `analyse` describes a page and writes `Configuration/pages/<pageName>.json`: every field, button,
 tab and stage bar it can address, plus a list of controls that have no element type yet. Given an
@@ -179,6 +194,144 @@ naming any data.
 
 `pinned: true` marks an entry as a human decision. The analyser leaves that entry untouched on later runs, including decisions that cannot be inferred from the DOM.
 
+## Classic UI
+
+A page file declares its generation with `type`: `FreedomUI` (the default) or `ClassicUI`. The two
+share the DSL, the commands and the type names, and nothing else: a Classic page is Ext JS, addressed
+by predictable DOM ids rather than `element-name`. The page's generation decides which `Text` or
+`Lookup` an element is, so a Freedom-only type on a Classic page is refused when the configuration
+loads, with the message naming the generation it does exist for.
+
+A Classic page needs its `schema`, the page schema name. Every control id on the page starts with it:
+`ContactPageV2NameTextEdit-el` is the input of the element named `Name` on `ContactPageV2`, rendered
+by a `TextEdit`; `-wrap` is its box and `ContactPageV2NameLabel` its caption. The DSL addresses the
+element by `code`; when the element's name in the schema's `diff` differs from the code, the page
+file carries it as `name`. Pages built with the section wizard name their fields
+`LOOKUP<guid>` or `STRING<guid>`, so the page file maps a readable code onto that:
+
+```jsonc
+// Configuration/pages/OrderClassic.json
+{
+  "name": "OrderClassic",
+  "url": "/0/Shell/#CardModuleV2/UsrOrder1Page",
+  "type": "ClassicUI",
+  "schema": "UsrOrder1Page",
+  "elements": [
+    { "code": "UsrName",   "label": "Number",   "type": "Text" },
+    { "code": "UsrType",   "label": "Type",     "type": "Lookup",   "name": "LOOKUPceebb14a-c7fc-443b-a434-6d47069519d4" },
+    { "code": "UsrDate",   "label": "Date",     "type": "DateTime", "name": "DATETIME7fa68919-649f-46d7-8f33-3149f642c4a3" },
+    { "code": "CloseButton", "label": "Close",  "type": "Button" },
+    { "code": "GeneralInfoTab", "label": "General", "type": "Tab" },
+    { "code": "Tabs", "label": "", "type": "TabPanel", "tabs": ["General", "Products"] },
+    { "code": "Stage", "label": "", "type": "CasesBar", "values": ["New", "In progress", "Done"], "subvalues": { "Done": ["Done", "Cancelled"] } },
+    { "code": "Products", "label": "Products", "type": "Detail", "name": "UsrOrderProductDetail", "columns": ["Product", "Quantity"] },
+    { "code": "AddProduct", "label": "", "type": "Button", "name": "AddRecordButton", "detail": "UsrOrderProductDetail" }
+  ]
+}
+```
+
+| `type` | Classic control(s) | Value kind | Extra members |
+| --- | --- | --- | --- |
+| Text | `TextEdit` | Text | `name`; `pinned` |
+| RichText | `MemoEdit` | Text | `name`; `pinned` |
+| Integer | `IntegerEdit` | Number | `name`; `pinned` |
+| Decimal | `FloatEdit`, `MoneyEdit` | Number | `name`; `pinned` |
+| Boolean | `CheckBoxEdit` | Boolean | `name`; `pinned` |
+| Date | `DateEdit` | DateTime | `name`; `pinned` |
+| Time | `TimeEdit` | DateTime | `name`; `pinned` |
+| DateTime | `DateEdit` + `TimeEdit` | DateTime | `name`; `pinned` |
+| Lookup | `LookupEdit`, `ComboBoxEdit` | Lookup | `name`; `pinned` |
+| Button | `{Prefix}{Name}Button-wrapperEl` / `-textEl` | None | `name`, `detail`, `settleMs`; `pinned` |
+| Tab | `li[data-item-index]` of `{Schema}TabsTabPanel` | None | `name`, `panel`, `settleMs`; `pinned` |
+| TabPanel | `{Schema}{Name}TabPanel` | Tab | `tabs`, `settleMs`; `pinned` |
+| Detail | `{Detail}Container`, grid `grid-{Detail}DataGridGrid-wrap` | Number (row count) | `name`, `columns`; `pinned` |
+| CasesBar | `SectionActionsDashboardActionsControlContainer` (`BaseStageControl`) | Stage | `values`, `subvalues`, `container`, `settleMs`; `pinned` |
+
+A `DateTime` column renders two controls under one name, a date and a time; the element writes both
+and reads one value. A `Decimal` covers both the float and the money control because a money field
+is a float with a currency behind it. A `Lookup` covers the drop-down list and the searchable
+lookup: both open a list under the input when text is typed, and `set` types the value and picks
+the item whose caption matches exactly.
+
+The DSL speaks ISO dates and invariant numbers whatever the user's culture. Classic shows
+`06.11.2026` and `12,50` to a Ukrainian user, so typed fields are read from the page's view model
+rather than from the rendered text, and a date is written in the culture the page itself reports
+(`Terrasoft.Resources.CultureSettings`), never from a format hard-coded in the framework.
+
+Tabs have no ids: the headers are `li` items whose `data-item-index` is the tab's position in the
+page's `TabsCollection`, hidden tabs counted. A tab is therefore addressed by its name in the schema
+(`GeneralInfoTab`, `Tabdebe3cb6TabLabel`), and the framework turns the name into the index through
+the view model. The panel is `Tabs` unless `panel` says otherwise. Content of a visited tab stays in
+the DOM, hidden, when another tab is opened; a control on a tab that was never opened is absent.
+
+Classic renders tabs in one shape, but the DSL offers both views of it, as it does for Freedom UI:
+a `Tab` is one tab by its schema name, for `click`; a `TabPanel` (named `Tabs` on nearly every
+page) is the panel as one element whose value is the open tab's caption, for `set` and `check-value`:
+
+```
+click GeneralInfoTab                 # by schema name
+set Tabs "Products"                  # by caption
+check-value Tabs eq "Products"
+```
+
+A `Detail` is the grid of related records, addressed by the **detail schema name**
+(`UsrOrderProductDetail`), because everything inside a detail is prefixed by that schema rather
+than by the page. Its value is its row count, read from the grid's loaded collection, so
+`check-value Products eq "3"` and `check-value Products gt "0"` read naturally and `set` is
+refused. `check Products columns` compares the rendered captions with `columns`, and
+`check Products is editable` tells a detail that takes edits in place (Classic renders it as a
+configuration grid) from one that opens a page per record. A detail's own buttons are ordinary
+`Button` elements with the `detail` option (`UsrOrderProductDetailAddRecordButtonButton-wrapperEl`),
+and their `name` is the full schema name of the button, `AddRecordButton`, as it is for page
+buttons such as `CloseButton`. A detail on a tab that was never opened is absent, as any control is.
+
+A detail's rows are addressed by their cells: `check-row Products Product=Pump exists`,
+`select-row`, `delete-row`. A detail that edits in place also takes `add-record Products set
+Product=Pump;Quantity=2`: the row the add button opens is filled through the editors it renders (a
+lookup through its list, a checkbox by a click, a date in the page's culture) and saved with the
+row's own save action. **A detail saves its own records**: a row added or deleted is in the database
+at once, whatever the page's Save button does afterwards. A detail that opens a page per record
+takes `click` on its add button followed by `on <page>`.
+
+The page's own `SaveButton` takes `"isSave": true`, as in Freedom UI: after the click, a message
+box is read as the reason the save failed, and the button has to leave the toolbar, which is how
+Classic shows a clean page. `DiscardChangesButton` is the Cancel that appears beside it.
+
+The `CasesBar` is the stage bar of the actions dashboard (the DCM bar). It is one shared module,
+so it needs no schema-derived id and the page file says only `"type": "CasesBar"`. Its value is the
+committed stage as the page's stage column holds it, which is the sub-stage when one is selected;
+`set` clicks a stage, or opens the parent's menu for a sub-stage, answers the confirmation the page
+may ask, and waits. **In Classic a stage change is not an edit: the dashboard validates the page and
+saves the record at once**, so `set` on the stage bar writes to the database even though nothing
+else on the page did. `values` and `subvalues` are documentation the analyser fills in; the element
+asks the control itself which stage hides which sub-stages. A stage the case does not allow from the
+current one is refused as not enabled. A message the page shows on the way -- a validation error
+naming an empty required field, a note that the move went through, a modal asking for something
+first -- is dismissed and quoted: in the log when the stage still changed, in the failure when it did
+not, so a case never fails with a bare "holds X" when the page said why.
+
+`analyse` describes a Classic page when the address is a `#CardModuleV2/<Schema>` one, and
+`schemas --classic` lists the instance's Classic pages (`...Page`, `...PageV2`, `...1Page`) with the
+address to paste. Rather than reading the DOM alone, the analyser asks each control's Ext component
+for the column it binds and the column's type, so the page file it writes names a field by its
+column (`QSTypeCargo`) and records the schema name (`LOOKUPceebb14a-...`) as `name`. A second element
+bound to the same column, typically a copy of a header field on another tab, keeps its schema name as
+its code. A DateTime column's date and time controls become one `DateTime` element; details are named
+by their schema and carry their `columns`; a detail's buttons are `Button` elements coded detail
+schema plus button name, with `detail` set; the tab panel becomes `Tabs` with its captions and the
+stage bar `Stage` with its `values` and `subvalues`. Every tab is opened in turn, because a tab
+renders its content on first opening, and the tab the page arrived on is restored. `SaveButton` and
+`DiscardChangesButton` are always written although a clean page does not render them: BasePageV2
+gives them to every page, and they appear the moment the page is dirty.
+
+Three things a Classic page does that look like test failures and are not. Once a page has unsaved
+changes, Classic replaces its Close button with Save and Cancel, so `check CloseButton exists`
+holds before the first `set` and `check CloseButton not exists` after it. A business rule may lock
+a field the moment it gets a value, so a `set` that succeeds can be followed by a `clear` that is
+refused as read-only; the refusal names the field. And the actions dashboard and the details are
+modules of their own that finish loading after the page's fields, so the stage bar and the details
+wait for their own content before answering rather than relying on the page being ready.
+
 ## Values
 
 Values cross command layers as text. Dates accept `yyyy-MM-ddTHH:mm:ss`, `yyyy-MM-ddTHH:mm`, or `yyyy-MM-dd`; date values are returned as `yyyy-MM-ddTHH:mm:ss`.
@@ -204,6 +357,7 @@ in the browser lists them, so the runner reads them over OData:
 creatio-tests schemas Contact          # form pages whose name contains "Contact"
 creatio-tests schemas                  # every form page on the instance
 creatio-tests schemas --list-pages     # section pages instead
+creatio-tests schemas Order --classic  # Classic UI pages (ContactPageV2, UsrOrder1Page ...)
 ```
 
 Each result comes with the address that opens it, ready to paste into `analyse`:
@@ -263,10 +417,10 @@ All paths are relative to the working directory.
 
 | File | Fields |
 | --- | --- |
-| `creatio.env.config.json` (copy `creatio.env.config.example.json`) | `BaseUrl`, optional `AuthUrl`, `Users` (`Username`, `Password`), optional `CasesFolders`, `AnalysisFolders` and `ProcessCasesFolders` |
+| `creatio.env.config.json` (copy `creatio.env.config.example.json`) | `BaseUrl`, optional `AuthUrl`, `Users` (`Username`, `Password`, optional `Name`: what a case writes after `use` when the login should stay out of the cases), optional `CasesFolders`, `AnalysisFolders` and `ProcessCasesFolders` |
 | `creatio.site.config.json` | `AuthPath`, optional `ODataBasePath`, optional `ProcessStartPath` (default `/0/ServiceModel/ProcessEngineService.svc/RunProcess`) |
 | `processes/*.json` | one file per process a case may start: `name` and `parameters` (`code`, `type`, `direction`) |
-| `pages/*.json` | one file per page: `name`, `url`, optional `type`, and `elements` (`code`, `label`, `type`, optional `pinned`, plus type-specific options). The page is implied by the file, so elements never repeat it. |
+| `pages/*.json` | one file per page: `name`, `url`, `type` (`FreedomUI`, the default, or `ClassicUI`), `schema` (Classic only: the page schema name), and `elements` (`code`, `label`, `type`, optional `pinned`, plus type-specific options such as a Classic element's `name`). The page is implied by the file, so elements never repeat it. |
 | `objects.config.json` | `objects`: `name`, `sectionPage`, `formPage`, `newButton`, `saveButton`, `fields` mapping codes to static-value names |
 | `static.values.json` | object mapping static names to scalar values |
 | `run.config.json` | `headless`, `continueOnFailure`, `runAnalysis`, `viewportWidth`, `viewportHeight`, `elementTimeoutMs`, `absenceTimeoutMs`, `pageLoadTimeoutMs`, `reportsDirectory`, `reports`, `skipFilePrefix` |
@@ -301,7 +455,8 @@ The first pass checks all lines before a browser action runs: unknown commands, 
 
 ```text
 Unknown command 'opne'. Known commands: add-record, analyse, check, check-value, click, clear, create, end, goto, open, set, use, wait.
-Element 'X' has unknown type 'Slider'. Known types: Boolean, Button, CasesBar, Date, DateTime, Decimal, Email, Integer, Link, Lookup, Phone, RichText, Tab, Text, Time.
+Element 'X' on page 'ContactForm': Unknown element type 'Slider' for a FreedomUI page. Known types for FreedomUI pages: Boolean, Button, CasesBar, DataGrid, Date, DateTime, Decimal, Email, Integer, Link, Lookup, Phone, RichText, Tab, Text, Time, ToggleTab.
+Element 'Email' on page 'OrderClassic': Unknown element type 'Email' for a ClassicUI page. It exists for FreedomUI pages only. Known types for ClassicUI pages: Boolean, Button, Date, DateTime, Decimal, Integer, Lookup, RichText, Tab, Text, Time.
 'wait' expects the unit 'second' or 'minute'.
 ```
 
@@ -310,3 +465,5 @@ Element 'X' has unknown type 'Slider'. Known types: Boolean, Button, CasesBar, D
 To add a command, copy [ClickCommand.cs](../src/CreatioAutoTests.Core/Commands/ClickCommand.cs), select or implement an `ICommandValidator`, declare its capability interfaces in `SupportedTargets`, and add tests. Reflection discovers the command; no registry, enum, or switch changes.
 
 To add an element, copy [TextField.cs](../src/CreatioAutoTests.Core/Frontend/Fields/TextField.cs), choose a suitable base, apply `[UiElement]`, and provide an options class where needed. Reflection discovers the element; no registry, enum, or switch changes.
+
+To add a Classic element, copy [Classic/Fields/TextField.cs](../src/CreatioAutoTests.Core/Frontend/Classic/Fields/TextField.cs) instead: `Generation = UiGeneration.ClassicUI` and the `Controls` it renders as take the place of a host tag, and the same type name may already exist for Freedom UI.

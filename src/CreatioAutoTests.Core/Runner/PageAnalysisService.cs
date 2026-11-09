@@ -1,5 +1,7 @@
 using CreatioAutoTests.Analysis;
 using CreatioAutoTests.Configuration;
+using CreatioAutoTests.Frontend;
+using CreatioAutoTests.Frontend.Runtime;
 using CreatioAutoTests.Session;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
@@ -11,13 +13,15 @@ namespace CreatioAutoTests.Runner;
 /// its configuration file is written, and everything is closed again.
 ///
 /// The same work the 'analyse' DSL command performs, reachable from the CLI so a page can be
-/// described before any test exists for it.
+/// described before any test exists for it. The address decides the generation, and with it which
+/// analyser describes the page.
 /// </summary>
 public sealed class PageAnalysisService
 {
     private readonly FrameworkConfiguration _configuration;
     private readonly ConfigurationPaths _paths;
     private readonly PageAnalyzer _analyzer;
+    private readonly ClassicPageAnalyzer _classicAnalyzer;
     private readonly PageConfigWriter _writer;
     private readonly CreatioAuthenticator _authenticator;
     private readonly ILoggerFactory _loggerFactory;
@@ -27,6 +31,7 @@ public sealed class PageAnalysisService
         FrameworkConfiguration configuration,
         ConfigurationPaths paths,
         PageAnalyzer analyzer,
+        ClassicPageAnalyzer classicAnalyzer,
         PageConfigWriter writer,
         CreatioAuthenticator authenticator,
         ILoggerFactory loggerFactory)
@@ -34,6 +39,7 @@ public sealed class PageAnalysisService
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _paths = paths ?? throw new ArgumentNullException(nameof(paths));
         _analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
+        _classicAnalyzer = classicAnalyzer ?? throw new ArgumentNullException(nameof(classicAnalyzer));
         _writer = writer ?? throw new ArgumentNullException(nameof(writer));
         _authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -52,7 +58,7 @@ public sealed class PageAnalysisService
     {
         var path = new PagePath(address);
         var name = pageName ?? path.DefaultPageName;
-        var username = user ?? _configuration.Environment.Users[0].Username;
+        var username = user ?? _configuration.Environment.Users[0].DisplayName;
 
         using var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -80,11 +86,28 @@ public sealed class PageAnalysisService
             Timeout = _configuration.RunSettings.PageLoadTimeoutMs
         }).ConfigureAwait(false);
 
-        await WaitForOverlayAsync(page).ConfigureAwait(false);
+        PageAnalysis analysis;
+        if (path.Generation == UiGeneration.ClassicUI)
+        {
+            // The Classic runtime knows when the form is built; the schema from the address tells it
+            // which controls to count.
+            var definition = new PageDefinition { Name = name, Url = path.Url, Type = UiGenerations.ClassicUIName, Schema = path.Schema };
+            await PageRuntimes.For(UiGeneration.ClassicUI)
+                .WaitForReadyAsync(page, definition, _configuration.RunSettings, _loggerFactory.CreateLogger<PageAnalysisService>(), cancellationToken)
+                .ConfigureAwait(false);
 
-        var analysis = await _analyzer
-            .AnalyzeAsync(page, name, path.Url, path.RecordId, includeHidden, walkTabs, cancellationToken)
-            .ConfigureAwait(false);
+            analysis = await _classicAnalyzer
+                .AnalyzeAsync(page, name, path.Url, path.RecordId, path.Schema, includeHidden, walkTabs, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await WaitForOverlayAsync(page).ConfigureAwait(false);
+
+            analysis = await _analyzer
+                .AnalyzeAsync(page, name, path.Url, path.RecordId, includeHidden, walkTabs, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         var written = dryRun
             ? new PageConfigWriteResult("(dry run)", analysis.Elements.Count, Array.Empty<ElementDefinition>(), false, Array.Empty<ElementDefinition>())

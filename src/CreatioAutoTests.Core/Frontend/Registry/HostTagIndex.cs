@@ -17,7 +17,8 @@ public sealed class HostTagIndex
 
         _byTag = new Dictionary<string, List<UiElementRegistration>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var registration in registry.Registrations)
+        // Only Freedom UI elements live on a host tag; Classic UI ones are addressed by DOM id.
+        foreach (var registration in registry.RegistrationsOf(UiGeneration.FreedomUI))
         {
             if (string.IsNullOrWhiteSpace(registration.HostTag))
             {

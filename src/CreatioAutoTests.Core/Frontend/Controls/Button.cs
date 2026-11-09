@@ -8,7 +8,7 @@ namespace CreatioAutoTests.Frontend.Controls;
 /// rather than a hard-coded type enum, so a project can describe its own buttons in configuration.
 /// </summary>
 [UiElement("Button", HostTag = "crt-button", Options = typeof(ButtonOptions))]
-public sealed class Button : UiElementBase, IClickable
+public sealed class Button : FreedomElementBase, IClickable
 {
     private const string NotificationSelector = "output[data-qa=\"notificationPopup\"].crt-notify-message";
 
@@ -135,18 +135,6 @@ public sealed class Button : UiElementBase, IClickable
 
             var text = await popup.First.InnerTextAsync().ConfigureAwait(false);
             return string.IsNullOrWhiteSpace(text) ? null : text.Trim();
-        }
-        catch (PlaywrightException)
-        {
-            return null;
-        }
-    }
-
-    private static async Task<string?> SafeAttributeAsync(ILocator locator, string name)
-    {
-        try
-        {
-            return await locator.GetAttributeAsync(name).ConfigureAwait(false);
         }
         catch (PlaywrightException)
         {

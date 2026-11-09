@@ -17,19 +17,25 @@ public sealed class UiElementFactory
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
+    /// <summary>Creates a Freedom UI element against an already open page, for callers without a page definition.</summary>
+    public IUiElement Create(ElementDefinition definition, IPage page, RunSettings settings) =>
+        Create(definition, null, page, settings);
+
     /// <summary>
     /// Creates the element described by <paramref name="definition"/> against an already open page.
-    /// The concrete class comes from the registry, which is what the validator resolved earlier.
+    /// The concrete class comes from the registry of the page's generation, which is what the
+    /// validator resolved earlier; without a page definition the element is taken to be Freedom UI.
     /// </summary>
-    public IUiElement Create(ElementDefinition definition, IPage page, RunSettings settings)
+    public IUiElement Create(ElementDefinition definition, PageDefinition? pageDefinition, IPage page, RunSettings settings)
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(page);
         ArgumentNullException.ThrowIfNull(settings);
 
-        var registration = _registry.Resolve(definition.Type);
+        var generation = pageDefinition?.Generation ?? UiGeneration.FreedomUI;
+        var registration = _registry.Resolve(generation, definition.Type);
         var logger = _loggerFactory.CreateLogger(registration.ImplementationType);
-        var context = new ElementRuntimeContext(page, definition, settings, logger);
+        var context = new ElementRuntimeContext(page, definition, settings, logger, pageDefinition);
 
         try
         {
