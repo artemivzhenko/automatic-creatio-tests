@@ -1,6 +1,8 @@
 """Checks for the MCP server's tools, called as plain functions:  python test_server.py"""
 
 import sys
+import shutil
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -12,6 +14,8 @@ def test_reads():
     assert "## Process cases" in server.dsl()
     listing = server.cases()
     assert "Cases/" in listing and ".act.exp" in listing and "[example]" in listing
+    process_examples = server.cases("ProcessCases")
+    assert "order-process.act.exp" in process_examples and "[example]" in process_examples
     first_case = next(p for p in sorted((server.ROOT / "Cases").glob("*.act.exp")))
     assert "use " in server.case(first_case.name.removesuffix(".act.exp")) and "use " in server.case(first_case.name)
     assert server.case("nope").startswith("no case")
@@ -23,7 +27,24 @@ def test_reads():
 
 
 def test_validate_runs_the_command_line():
-    out = server.validate()
+    root = server.ROOT
+    with tempfile.TemporaryDirectory() as tmp:
+        isolated = Path(tmp)
+        (isolated / "Configuration" / "pages").mkdir(parents=True)
+        (isolated / "Cases").mkdir()
+        for name in ("creatio.site.config.json", "run.config.json", "objects.config.json", "static.values.json"):
+            shutil.copyfile(root / "Configuration" / name, isolated / "Configuration" / name)
+        shutil.copyfile(root / "Configuration" / "creatio.env.config.example.json",
+                        isolated / "Configuration" / "creatio.env.config.json")
+        shutil.copyfile(root / "Configuration" / "pages" / "OrderClassic.json",
+                        isolated / "Configuration" / "pages" / "OrderClassic.json")
+        shutil.copyfile(root / "Cases" / "classic-order-form.act.exp",
+                        isolated / "Cases" / "classic-order-form.act")
+        try:
+            server.ROOT = isolated
+            out = server.validate()
+        finally:
+            server.ROOT = root
     assert "case(s) checked" in out and out.rstrip().endswith("exit code 0"), out
 
 

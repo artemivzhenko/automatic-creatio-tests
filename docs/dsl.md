@@ -4,6 +4,8 @@
 
 Write one command per line. Blank lines and lines beginning with `#` are ignored. Double quotes preserve spaces and make a literal value; unquoted values may name static values or elements where the command permits them. The first command must be `use <user>`.
 
+Copy the `.act.exp` examples under `Cases/` and `ProcessCases/` to `.act` files to adapt them.
+
 ## Commands
 
 | Command | Syntax | Target | Example |
@@ -129,6 +131,7 @@ to prove that a process created, found or removed what it should have.
   "name": "UsrOrder_Process",
   "parameters": [
     { "code": "Amount", "type": "Money", "direction": "in" },
+    { "code": "Contact", "type": "Lookup", "direction": "in" },
     { "code": "Verdict", "type": "Text", "direction": "out" },
     { "code": "Total", "type": "Integer", "direction": "variable" }
   ]

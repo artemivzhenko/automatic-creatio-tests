@@ -1,0 +1,7 @@
+# Process results and records, without a browser.
+use Supervisor
+start UsrOrder_Process with Amount=500;Contact=0c48c818-08f0-4f70-9b58-be512227f3bf
+check-result Verdict eq "big"
+check-result Total ge "5"
+check-record UsrOrder UsrName=Order 1;UsrAmount=500 exists
+check-record UsrOrderLog UsrOrder=0c48c818-08f0-4f70-9b58-be512227f3bf not exists

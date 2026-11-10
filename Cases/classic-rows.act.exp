@@ -1,0 +1,10 @@
+# Classic detail rows save immediately; use test data on a suitable page.
+use Supervisor
+open OrderClassic for 27bcc84f-727d-4314-8b0e-99b286253a27
+set Tabs "Products"
+add-record Products set Product=Pump;Quantity=2
+check-row Products Product=Pump;Quantity=2 exists
+select-row Products Product=Pump
+delete-row Products Product=Pump
+check-row Products Product=Pump not exists
+end

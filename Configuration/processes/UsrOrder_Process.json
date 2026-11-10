@@ -1,0 +1,9 @@
+{
+  "name": "UsrOrder_Process",
+  "parameters": [
+    { "code": "Amount", "type": "Money", "direction": "in" },
+    { "code": "Contact", "type": "Lookup", "direction": "in" },
+    { "code": "Verdict", "type": "Text", "direction": "out" },
+    { "code": "Total", "type": "Integer", "direction": "variable" }
+  ]
+}

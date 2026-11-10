@@ -1,0 +1,17 @@
+{
+  "name": "OrderClassic",
+  "url": "/0/Shell/#CardModuleV2/UsrOrder1Page",
+  "type": "ClassicUI",
+  "schema": "UsrOrder1Page",
+  "elements": [
+    { "code": "UsrName", "label": "Number", "type": "Text" },
+    { "code": "UsrType", "label": "Type", "type": "Lookup", "name": "LOOKUPceebb14a-c7fc-443b-a434-6d47069519d4" },
+    { "code": "UsrDate", "label": "Date", "type": "DateTime", "name": "DATETIME7fa68919-649f-46d7-8f33-3149f642c4a3" },
+    { "code": "CloseButton", "label": "Close", "type": "Button" },
+    { "code": "GeneralInfoTab", "label": "General", "type": "Tab" },
+    { "code": "Tabs", "label": "", "type": "TabPanel", "tabs": ["General", "Products"] },
+    { "code": "Stage", "label": "", "type": "CasesBar", "values": ["New", "In progress", "Done"], "subvalues": { "Done": ["Done", "Cancelled"] } },
+    { "code": "Products", "label": "Products", "type": "Detail", "name": "UsrOrderProductDetail", "columns": ["Product", "Quantity"] },
+    { "code": "AddProduct", "label": "", "type": "Button", "name": "AddRecordButton", "detail": "UsrOrderProductDetail" }
+  ]
+}
