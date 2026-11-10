@@ -3,6 +3,7 @@
 import sys
 import shutil
 import tempfile
+import json
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -40,12 +41,21 @@ def test_validate_runs_the_command_line():
                         isolated / "Configuration" / "pages" / "OrderClassic.json")
         shutil.copyfile(root / "Cases" / "classic-order-form.act.exp",
                         isolated / "Cases" / "classic-order-form.act")
+        page = isolated / "Configuration" / "pages" / "OrderClassic.json"
+        data = json.loads(page.read_text(encoding="utf-8-sig"))
+        data["elements"].append({"code": "Код", "label": "Название", "type": "Text", "tab": "GeneralInfoTab"})
+        page.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        (isolated / "Cases" / "unicode.act").write_text(
+            'use Supervisor\nopen OrderClassic\nset Код "Тест"\n', encoding="utf-8")
         try:
             server.ROOT = isolated
             out = server.validate()
+            page_out = server.page_config("OrderClassic")
         finally:
             server.ROOT = root
     assert "case(s) checked" in out and out.rstrip().endswith("exit code 0"), out
+    assert "Название" in page_out
+    assert "warning: Код lies on tab GeneralInfoTab" in out, out
 
 
 if __name__ == "__main__":

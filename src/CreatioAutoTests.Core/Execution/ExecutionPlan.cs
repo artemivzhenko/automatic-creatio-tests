@@ -30,12 +30,14 @@ public sealed class ExecutionPlan
         string testName,
         string filePath,
         IReadOnlyList<ExecutionStep> steps,
-        IReadOnlyList<ValidationIssue> issues)
+        IReadOnlyList<ValidationIssue> issues,
+        IReadOnlyList<ValidationIssue> warnings)
     {
         TestName = testName;
         FilePath = filePath;
         Steps = steps;
         Issues = issues;
+        Warnings = warnings;
     }
 
     /// <summary>Logical test name associated with this complete plan or issue collection.</summary>
@@ -50,16 +52,19 @@ public sealed class ExecutionPlan
     /// <summary>Every validation issue that prevents this file from running.</summary>
     public IReadOnlyList<ValidationIssue> Issues { get; }
 
+    /// <summary>Non-blocking validation warnings associated with source lines.</summary>
+    public IReadOnlyList<ValidationIssue> Warnings { get; }
+
     /// <summary>Whether the plan has no validation issues and may be executed.</summary>
     public bool IsValid => Issues.Count == 0;
 
     /// <summary>Creates an executable plan from the fully validated ordered steps.</summary>
-    public static ExecutionPlan Valid(string testName, string filePath, IReadOnlyList<ExecutionStep> steps) =>
-        new(testName, filePath, steps, Array.Empty<ValidationIssue>());
+    public static ExecutionPlan Valid(string testName, string filePath, IReadOnlyList<ExecutionStep> steps, IReadOnlyList<ValidationIssue>? warnings = null) =>
+        new(testName, filePath, steps, Array.Empty<ValidationIssue>(), warnings ?? Array.Empty<ValidationIssue>());
 
     /// <summary>Creates a non-executable plan that preserves every issue found in the file.</summary>
-    public static ExecutionPlan Invalid(string testName, string filePath, IReadOnlyList<ValidationIssue> issues) =>
-        new(testName, filePath, Array.Empty<ExecutionStep>(), issues);
+    public static ExecutionPlan Invalid(string testName, string filePath, IReadOnlyList<ValidationIssue> issues, IReadOnlyList<ValidationIssue>? warnings = null) =>
+        new(testName, filePath, Array.Empty<ExecutionStep>(), issues, warnings ?? Array.Empty<ValidationIssue>());
 
     /// <summary>Human readable summary used in reports and in the CLI.</summary>
     public string DescribeIssues() =>

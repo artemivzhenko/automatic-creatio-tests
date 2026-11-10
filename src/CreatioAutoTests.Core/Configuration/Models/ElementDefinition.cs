@@ -26,6 +26,9 @@ public sealed class ElementDefinition
     /// <summary>Registered UI element type that determines implementation and static value kind.</summary>
     public string Type { get; set; } = string.Empty;
 
+    /// <summary>Code of the tab containing this element, when it belongs to a tab.</summary>
+    public string? Tab { get; set; }
+
     /// <summary>
     /// Marks the entry as decided by a person, so analysis leaves it alone.
     ///

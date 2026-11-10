@@ -210,6 +210,8 @@ public sealed class ClassicSnapshotCollectionTests
             Assert.That(codes, Does.Contain("Stage"));
             Assert.That(codes, Does.Contain("SaveButton"));
             Assert.That(codes, Does.Contain("DiscardChangesButton"));
+            Assert.That(collector.Elements.Single(e => e.Code == "SaveButton").IsSave, Is.True);
+            Assert.That(collector.Elements.Single(e => e.Code == "DiscardChangesButton").IsSave, Is.False);
 
             var detail = collector.Elements.Single(e => e.Code == "UsrProductDetail");
             Assert.That(detail.Columns, Is.EqualTo(new[] { "Product", "Qty" }));
@@ -269,6 +271,7 @@ public sealed class ClassicPageFileWritingTests
                 new DiscoveredElement("UsrProductDetail", "Products", "Detail", "Detail", false, false, true, null, new[] { "Product", "Quantity" }, null, null, false),
                 new DiscoveredElement("UsrProductDetailAddRecordButton", "", "Button", "Button", false, false, true, null, null, null, null, false, Name: "AddRecordButton", Detail: "UsrProductDetail"),
                 new DiscoveredElement("Tabs", "", "TabPanel", "TabPanel", false, false, true, null, null, new[] { "General", "Products" }, null, false),
+                new DiscoveredElement("SaveButton", "", "Button", "Button", false, false, true, null, null, null, null, false, IsSave: true),
                 new DiscoveredElement("Stage", "", "CasesBar", "BaseStageControl", false, false, true, new[] { "New", "Done" }, null, null, null, false,
                     Subvalues: new Dictionary<string, IReadOnlyList<string>> { ["Done"] = new[] { "Done", "Cancelled" } }),
             },
@@ -289,6 +292,7 @@ public sealed class ClassicPageFileWritingTests
             Assert.That(json, Does.Contain("\"name\": \"LOOKUPceebb14a\""));
             Assert.That(json, Does.Contain("\"detail\": \"UsrProductDetail\""));
             Assert.That(json, Does.Contain("\"subvalues\""));
+            Assert.That(json, Does.Contain("\"isSave\": true"));
             Assert.That(catalog.TryGetElement("OrderClassic", "UsrType", out var type), Is.True);
             Assert.That(type.Definition.BindOptions<ClassicElementOptions>().Name, Is.EqualTo("LOOKUPceebb14a"));
             Assert.That(catalog.TryGetElement("OrderClassic", "UsrProductDetailAddRecordButton", out var button), Is.True);

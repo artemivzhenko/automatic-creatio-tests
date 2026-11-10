@@ -2,6 +2,7 @@ using CreatioAutoTests.Frontend;
 using CreatioAutoTests.Runner;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace CreatioAutoTests.Cli;
 
@@ -14,6 +15,7 @@ public static class Program
     /// <summary>Runs CLI analysis, validation, or test execution and returns its process exit code.</summary>
     public static async Task<int> Main(string[] args)
     {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
         if (args.Contains("--help") || args.Contains("-h"))
         {
             PrintUsage();
@@ -41,7 +43,14 @@ public static class Program
             var services = new ServiceCollection();
 
             services.AddLogging(builder => builder
-                .AddSimpleConsole(options => options.SingleLine = true)
+                .AddSimpleConsole(options =>
+                {
+                    options.SingleLine = true;
+                    if (args.Contains("--no-color"))
+                    {
+                        options.ColorBehavior = LoggerColorBehavior.Disabled;
+                    }
+                })
                 .SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Information));
 
             services.AddCreatioAutoTests(root);
@@ -247,6 +256,11 @@ public static class Program
         foreach (var file in files)
         {
             var plan = runner.Validate(file);
+
+            foreach (var warning in plan.Warnings)
+            {
+                Console.WriteLine("warning: " + warning.Message);
+            }
 
             if (plan.IsValid)
             {

@@ -473,7 +473,8 @@ public sealed class ClassicPageAnalyzer
                 }
 
                 Record("button:" + name, new DiscoveredElement(name, Text(button, "label"), "Button", "Button",
-                    false, false, Flag(button, "visible"), null, null, null, null, false));
+                    false, false, Flag(button, "visible"), null, null, null, null, false,
+                    IsSave: string.Equals(name, "SaveButton", StringComparison.Ordinal)));
             }
 
             foreach (var detail in snapshot.GetProperty("details").EnumerateArray())
@@ -581,7 +582,8 @@ public sealed class ClassicPageAnalyzer
 
                 _identities.Add(identity);
                 _codes.Add(name);
-                _elements.Add(new DiscoveredElement(name, string.Empty, "Button", "Button", false, false, false, null, null, null, null, false));
+                _elements.Add(new DiscoveredElement(name, string.Empty, "Button", "Button", false, false, false, null, null, null, null, false,
+                    IsSave: string.Equals(name, "SaveButton", StringComparison.Ordinal)));
             }
         }
 

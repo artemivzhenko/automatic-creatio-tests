@@ -126,4 +126,55 @@ public class ScriptValidatorTests
         Assert.That(plan.Issues[0].Message, Does.Contain("Unknown command"));
         Assert.That(plan.Issues[0].Message, Does.Contain("open"));
     }
+
+    [Test]
+    public void Tab_warnings_follow_tab_switches_and_do_not_block_validation()
+    {
+        var field = CatalogBuilder.Element("Name", "Text");
+        field.Tab = "GeneralInfoTab";
+        _catalog = CatalogBuilder.Build(field,
+            CatalogBuilder.Element("GeneralInfoTab", "Tab", label: "General"),
+            CatalogBuilder.Element("OtherTab", "Tab", label: "Other"));
+
+        var plan = Validate("use tester", "open TestPage", "set Name \"one\"",
+            "click GeneralInfoTab", "set Name \"two\"", "click OtherTab", "set Name \"three\"");
+
+        Assert.That(plan.IsValid, Is.True, plan.DescribeIssues());
+        Assert.That(plan.Warnings.Select(w => w.LineNumber), Is.EqualTo(new[] { 3, 7 }));
+        Assert.That(plan.Warnings[0].Message, Does.Contain("Name lies on tab GeneralInfoTab"));
+    }
+
+    [Test]
+    public void Warnings_are_retained_even_when_another_line_is_invalid()
+    {
+        var field = CatalogBuilder.Element("Name", "Text");
+        field.Tab = "GeneralInfoTab";
+        _catalog = CatalogBuilder.Build(field, CatalogBuilder.Element("GeneralInfoTab", "Tab"));
+        var plan = Validate("use tester", "open TestPage", "set Name \"one\"", "set Missing \"two\"");
+        Assert.That(plan.IsValid, Is.False);
+        Assert.That(plan.Warnings, Has.Count.EqualTo(1));
+        Assert.That(plan.Issues, Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void Classic_tab_panel_caption_opens_the_corresponding_tab()
+    {
+        var field = CatalogBuilder.Element("Name", "Text");
+        field.Tab = "GeneralInfoTab";
+        _catalog = CatalogBuilder.BuildPages(new PageDefinition
+        {
+            Name = "TestPage", Url = "/0/Shell/#CardModuleV2/UsrPage", Type = "ClassicUI", Schema = "UsrPage",
+            Elements = new List<ElementDefinition>
+            {
+                field, CatalogBuilder.Element("GeneralInfoTab", "Tab", label: "General"),
+                CatalogBuilder.Element("OtherTab", "Tab", label: "Other"),
+                CatalogBuilder.Element("Tabs", "TabPanel"),
+            },
+        });
+
+        var plan = Validate("use tester", "open TestPage", "set Tabs \"General\"", "set Name \"one\"",
+            "set Tabs \"Other\"", "set Name \"two\"", "open TestPage", "set Name \"three\"");
+        Assert.That(plan.IsValid, Is.True, plan.DescribeIssues());
+        Assert.That(plan.Warnings.Select(w => w.LineNumber), Is.EqualTo(new[] { 6, 8 }));
+    }
 }

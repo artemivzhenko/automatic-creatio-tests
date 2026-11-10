@@ -18,6 +18,7 @@ namespace CreatioAutoTests.Analysis;
 /// <param name="Name">Classic UI: the element's name in the schema, when it differs from the code.</param>
 /// <param name="Detail">Classic UI: the detail schema a button belongs to.</param>
 /// <param name="Subvalues">Stage caption to the sub-stages behind its menu.</param>
+/// <param name="IsSave">Whether this is the page's Save button.</param>
 public sealed record DiscoveredElement(
     string Code,
     string Label,
@@ -33,7 +34,8 @@ public sealed record DiscoveredElement(
     bool TypeUndecidable,
     string? Name = null,
     string? Detail = null,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? Subvalues = null);
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? Subvalues = null,
+    bool IsSave = false);
 
 /// <summary>A control the page renders that no registered element type claims.</summary>
 public sealed record UnknownControl(string HostTag, string Code);

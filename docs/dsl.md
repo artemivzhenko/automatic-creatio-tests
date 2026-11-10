@@ -197,6 +197,10 @@ naming any data.
 
 `pinned: true` marks an entry as a human decision. The analyser leaves that entry untouched on later runs, including decisions that cannot be inferred from the DOM.
 
+An element may also declare `"tab": "<TabCode>"`. Validation warns when a case addresses it
+without first opening that tab. This warning does not prevent execution: Creatio may remember
+the previously selected tab.
+
 ## Classic UI
 
 A page file declares its generation with `type`: `FreedomUI` (the default) or `ClassicUI`. The two
@@ -298,7 +302,8 @@ takes `click` on its add button followed by `on <page>`.
 
 The page's own `SaveButton` takes `"isSave": true`, as in Freedom UI: after the click, a message
 box is read as the reason the save failed, and the button has to leave the toolbar, which is how
-Classic shows a clean page. `DiscardChangesButton` is the Cancel that appears beside it.
+Classic shows a clean page. Classic analysis marks `SaveButton` automatically.
+`DiscardChangesButton` is the Cancel that appears beside it.
 
 The `CasesBar` is the stage bar of the actions dashboard (the DCM bar). It is one shared module,
 so it needs no schema-derived id and the page file says only `"type": "CasesBar"`. Its value is the
@@ -423,7 +428,7 @@ All paths are relative to the working directory.
 | `creatio.env.config.json` (copy `creatio.env.config.example.json`) | `BaseUrl`, optional `AuthUrl`, `Users` (`Username`, `Password`, optional `Name`: what a case writes after `use` when the login should stay out of the cases), optional `CasesFolders`, `AnalysisFolders` and `ProcessCasesFolders` |
 | `creatio.site.config.json` | `AuthPath`, optional `ODataBasePath`, optional `ProcessStartPath` (default `/0/ServiceModel/ProcessEngineService.svc/RunProcess`) |
 | `processes/*.json` | one file per process a case may start: `name` and `parameters` (`code`, `type`, `direction`) |
-| `pages/*.json` | one file per page: `name`, `url`, `type` (`FreedomUI`, the default, or `ClassicUI`), `schema` (Classic only: the page schema name), and `elements` (`code`, `label`, `type`, optional `pinned`, plus type-specific options such as a Classic element's `name`). The page is implied by the file, so elements never repeat it. |
+| `pages/*.json` | one file per page: `name`, `url`, `type` (`FreedomUI`, the default, or `ClassicUI`), `schema` (Classic only: the page schema name), and `elements` (`code`, `label`, `type`, optional `tab` and `pinned`, plus type-specific options such as a Classic element's `name` or a Save button's `isSave`). The page is implied by the file, so elements never repeat it. |
 | `objects.config.json` | `objects`: `name`, `sectionPage`, `formPage`, `newButton`, `saveButton`, `fields` mapping codes to static-value names |
 | `static.values.json` | object mapping static names to scalar values |
 | `run.config.json` | `headless`, `continueOnFailure`, `runAnalysis`, `viewportWidth`, `viewportHeight`, `elementTimeoutMs`, `absenceTimeoutMs`, `pageLoadTimeoutMs`, `reportsDirectory`, `reports`, `skipFilePrefix` |

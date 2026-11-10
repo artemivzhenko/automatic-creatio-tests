@@ -116,6 +116,11 @@ public sealed class PageConfigWriter
         // read as a deliberate expectation of nothing.
         var extra = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase);
 
+        if (element.IsSave)
+        {
+            extra["isSave"] = JsonSerializer.SerializeToElement(true);
+        }
+
         if (element.Stages is { Count: > 0 })
         {
             extra["values"] = JsonSerializer.SerializeToElement(element.Stages);

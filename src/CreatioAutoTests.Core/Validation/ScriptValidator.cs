@@ -37,7 +37,9 @@ public sealed class ScriptValidator
         ArgumentNullException.ThrowIfNull(context);
 
         var issues = new List<ValidationIssue>();
+        var warnings = new List<ValidationIssue>();
         var steps = new List<ExecutionStep>();
+        string? activeTab = null;
 
         context.CurrentPage = null;
         context.CurrentProcess = null;
@@ -90,13 +92,51 @@ public sealed class ScriptValidator
                 continue;
             }
 
+            foreach (var target in result.Targets)
+            {
+                var tab = target.Definition.Tab;
+                if (!string.IsNullOrWhiteSpace(tab) && !string.Equals(tab, activeTab, StringComparison.Ordinal))
+                {
+                    warnings.Add(new ValidationIssue(parsed.LineNumber, parsed.RawText,
+                        target.Code + " lies on tab " + tab + "; add 'click " + tab +
+                        "' or 'set Tabs ...' before line " + parsed.LineNumber));
+                }
+            }
+
+            if (result.NextPage is not null)
+            {
+                activeTab = null;
+            }
+            else if (result.Targets.Count > 0 && string.Equals(parsed.Keyword, "click", StringComparison.OrdinalIgnoreCase) &&
+                     string.Equals(result.Targets[0].Definition.Type, "Tab", StringComparison.OrdinalIgnoreCase))
+            {
+                activeTab = result.Targets[0].Code;
+            }
+            else if (result.Targets.Count > 0 && string.Equals(parsed.Keyword, "set", StringComparison.OrdinalIgnoreCase) &&
+                     string.Equals(result.Targets[0].Definition.Type, "TabPanel", StringComparison.OrdinalIgnoreCase))
+            {
+                var value = parsed.ArgumentAt(1);
+                var caption = value?.Value;
+                if (value is not null && !value.IsQuoted && context.StaticValues.TryGetValue(value.Value, out var staticValue))
+                {
+                    caption = staticValue;
+                }
+
+                var matchingTabs = context.Catalog.Entries
+                    .Where(e => string.Equals(e.Page, context.CurrentPage, StringComparison.OrdinalIgnoreCase) &&
+                                string.Equals(e.Definition.Type, "Tab", StringComparison.OrdinalIgnoreCase) &&
+                                string.Equals(e.Definition.Label, caption, StringComparison.OrdinalIgnoreCase))
+                    .Select(e => e.Definition.Code).Take(2).ToArray();
+                activeTab = matchingTabs.Length == 1 ? matchingTabs[0] : null;
+            }
+
             ApplyStateTransition(context, result);
             steps.Add(new ExecutionStep(parsed, registration, result.Targets));
         }
 
         return issues.Count == 0
-            ? ExecutionPlan.Valid(testName, filePath, steps)
-            : ExecutionPlan.Invalid(testName, filePath, issues);
+            ? ExecutionPlan.Valid(testName, filePath, steps, warnings)
+            : ExecutionPlan.Invalid(testName, filePath, issues, warnings);
     }
 
     private static bool IsUserDeclaration(CommandRegistration registration) =>

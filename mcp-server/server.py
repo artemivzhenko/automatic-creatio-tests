@@ -49,7 +49,9 @@ def _exe() -> list[str]:
 def _cli(args: list[str], timeout: int = RUN_TIMEOUT) -> str:
     """Runs the command line from the repository root and returns its output, exit code included."""
     try:
-        run = subprocess.run(_exe() + args, cwd=ROOT, capture_output=True, text=True, timeout=timeout, encoding="utf-8", errors="replace")
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        run = subprocess.run(_exe() + args + ["--no-color"], cwd=ROOT, capture_output=True, text=True, timeout=timeout, encoding="utf-8", errors="replace", env=env)
     except subprocess.TimeoutExpired:
         return f"timed out after {timeout} s: creatio-tests {' '.join(args)}"
     out = (run.stdout or "") + (("\n" + run.stderr) if run.stderr.strip() else "")
