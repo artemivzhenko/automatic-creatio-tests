@@ -72,7 +72,7 @@ public static class Program
             return validateOnly
                 ? Validate(runner, filter)
                 : await RunAsync(provider, runner, filter,
-                    analyseFirst || analyseOnly, analyseOnly).ConfigureAwait(false);
+                    analyseFirst || analyseOnly, analyseOnly, GetOption(args, "--task-folder"), GetOption(args, "--task")).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -233,13 +233,26 @@ public static class Program
         TestRunner runner,
         string? filter,
         bool runAnalysis,
-        bool analysisOnly)
+        bool analysisOnly,
+        string? taskFolder,
+        string? taskId)
     {
         var result = await runner
             .RunAsync(filter, runAnalysis ? true : null, analysisOnly)
             .ConfigureAwait(false);
 
         await provider.GetRequiredService<IReportWriter>().WriteAsync(result).ConfigureAwait(false);
+
+        if (taskFolder is not null)
+        {
+            var evidence = new EvidenceWriter(taskFolder, taskId);
+            await evidence.WriteAsync(result).ConfigureAwait(false);
+            evidence.Written.ForEach(f => Console.WriteLine("evidence: " + f));
+        }
+        else if (taskId is not null)
+        {
+            Console.Error.WriteLine("--task names the task in the evidence; give --task-folder <dir> to write it.");
+        }
 
         Console.WriteLine();
         Console.WriteLine(TextReportWriter.Render(result));
@@ -306,6 +319,8 @@ public static class Program
         Console.WriteLine("  --root <dir>       working directory holding Configuration/ and Cases/");
         Console.WriteLine("  --filter <text>    run only cases whose file name contains <text>");
         Console.WriteLine("  --validate-only    check the cases without opening a browser");
+        Console.WriteLine("  --task-folder <dir> write evidence/<AC>-report-N.txt and .table.md per case into a task folder");
+        Console.WriteLine("  --task <id>        the task id written at the top of each evidence file");
         Console.WriteLine("  --analyse          run the analysis scripts first, then the cases");
         Console.WriteLine("  --analyse-only     run the analysis scripts and stop");
         Console.WriteLine("  --verbose          debug level logging");

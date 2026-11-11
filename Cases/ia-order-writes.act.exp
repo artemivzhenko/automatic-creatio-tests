@@ -1,0 +1,14 @@
+# writes
+# ac: AC-02
+# A record inserted over OData opens on its page; the page shows what the record holds.
+use Supervisor
+insert iaOrder as Order set iaName=Remember bed;iaQuantity=3
+open iaOrderForm for $Order
+click GeneralInfoTab
+remember iaQuantity as $quantity
+check-record iaOrder Id=$Order has iaQuantity eq $quantity
+remember-record iaOrder iaName=Remember bed as $same
+check-count iaOrder Id=$same eq 1
+check-distinct iaOrder iaName where Id=$same
+check console no errors except "favicon"
+delete iaOrder $Order

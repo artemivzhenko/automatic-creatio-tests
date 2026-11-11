@@ -23,7 +23,7 @@ selectors, Playwright, or C#.
 
 ```bash
 dotnet build                                                      # 0 warnings is the bar
-dotnet test                                                       # 278 tests, no browser needed
+dotnet test                                                       # 291 tests, no browser needed
 dotnet run --project src/CreatioAutoTests.Cli -- --validate-only  # lint the suite, no browser
 dotnet run --project src/CreatioAutoTests.Cli --                  # run the cases live
 ```

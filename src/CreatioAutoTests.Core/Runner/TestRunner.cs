@@ -110,7 +110,8 @@ public sealed class TestRunner
     public ExecutionPlan Validate(string filePath)
     {
         var name = Path.GetFileNameWithoutExtension(filePath);
-        var commands = _parser.ParseFile(filePath);
+        var lines = File.ReadAllLines(filePath);
+        var commands = _parser.Parse(lines);
         var context = new ValidationContext(
             _configuration.Catalog,
             _configuration.StaticValues,
@@ -118,6 +119,7 @@ public sealed class TestRunner
             _configuration.Objects)
         {
             Processes = _configuration.Processes,
+            Directives = ScriptParser.Directives(lines),
         };
 
         return _validator.Validate(name, filePath, commands, context);

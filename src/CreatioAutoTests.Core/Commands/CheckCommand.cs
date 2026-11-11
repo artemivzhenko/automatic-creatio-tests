@@ -12,17 +12,30 @@ namespace CreatioAutoTests.Commands;
 ///   check X is [not] readonly
 ///   check X is [not] editable
 ///   check X columns         - the grid renders exactly the configured columns, in that order
+///   check console no errors [except "regex"] - no browser console error (or uncaught page error) so far
 /// Presence deliberately does not assert required or readonly: those are separate, explicit lines.
 /// </summary>
 [Command("check",
     Validator = typeof(StateCheckValidator),
     SupportedTargets = new[] { typeof(IExistable) },
-    Usage = "check <code> [not] exists | check <code> is [not] required|readonly|editable | check <code> columns")]
+    Usage = "check <code> [not] exists | check <code> is [not] required|readonly|editable | check <code> columns | check console no errors [except \"<regex>\"]")]
 public sealed class CheckCommand : ICommand
 {
     /// <summary>Asserts validated presence, absence, required, or readonly state on the target.</summary>
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
+        if (StateCheckValidator.ConsoleForm(context.Command, out var except) == true)
+        {
+            var allowed = except is null ? null : new System.Text.RegularExpressions.Regex(except);
+            var errors = context.Session.ConsoleErrors.Where(e => allowed is null || !allowed.IsMatch(e)).ToArray();
+            if (errors.Length > 0)
+            {
+                throw new CommandFailedException(errors.Length + " console error(s): " + string.Join(" | ", errors.Take(5).Select(e => e.Length > 200 ? e[..200] : e)));
+            }
+
+            return;
+        }
+
         var element = context.Target<IExistable>();
         var arguments = context.Command.Arguments.Skip(1).Select(a => a.Value.ToLowerInvariant()).ToArray();
 

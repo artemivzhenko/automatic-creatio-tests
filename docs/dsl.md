@@ -12,7 +12,7 @@ Copy the `.act.exp` examples under `Cases/` and `ProcessCases/` to `.act` files 
 | --- | --- | --- | --- |
 | use | `use <user>` | none | `use testUser` |
 | open | `open <page> [for <recordId>]` | none | `open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4` |
-| check | `check <code> [not] exists` \| `check <code> is [not] required\|readonly\|editable` \| `check <code> columns` | `IExistable`; `required`/`readonly` need `IStateAware`, `editable` needs `IEditableAware`, `columns` needs `IColumned` | `check Input_Text is required` |
+| check | `check <code> [not] exists` \| `check <code> is [not] required\|readonly\|editable` \| `check <code> columns` \| `check console no errors [except "<regex>"]` | `IExistable`; `required`/`readonly` need `IStateAware`, `editable` needs `IEditableAware`, `columns` needs `IColumned`; `console` none | `check Input_Text is required` |
 | check-value | `check-value <code> eq|ne|gt|ge|lt|le|contains|startswith|endswith <value>` | `IValueElement` | `check-value Input_Text eq "Sample Name 123"` |
 | set | `set <code> "value" | set <code> <sourceCodeOrStaticValue>` | `IValueElement` | `set Input_Text DefInput` |
 | click | `click <code>` | `IClickable` | `click SaveButton` |
@@ -26,7 +26,15 @@ Copy the `.act.exp` examples under `Cases/` and `ProcessCases/` to `.act` files 
 | add-record | `add-record <code> set Column=Value;Column=Value` | `IRecordAddable` | `add-record AddressList set Address type=Business;Full address=Main st. 1` |
 | start | `start <process> [with Param=Value;Param=Value]` | none (a configured process) | `start UsrOrder_Process with Amount=10` |
 | check-result | `check-result <parameter> eq|ne|gt|ge|lt|le|contains|startswith|endswith <value>` | none (an output of the last started process) | `check-result Verdict eq "big"` |
-| check-record | `check-record <object> Column=Value;Column=Value [not] exists` | none (read over OData) | `check-record UsrOrder UsrName=Order 1 exists` |
+| check-record | `check-record <object> Column=Value;Column=Value [not] exists` \| `check-record <object> <filter> has <column> <op> <value>` | none (read over OData) | `check-record UsrOrder UsrName=Order 1 exists` |
+| insert | `insert <object> as <alias> [keep] set Column=Value;...` | none (OData) | `insert UsrOrder as Order set UsrName=Bed;UsrAmount=500` |
+| update | `update <object> $alias\|<guid> set Column=Value;...` | none (OData) | `update UsrOrder $Order set UsrAmount=5000` |
+| delete | `delete <object> $alias\|<guid>` | none (OData) | `delete UsrOrder $Order` |
+| delete-record | `delete-record <object> Column=Value;...` | none (OData, at most 20 records) | `delete-record UsrOrderLog UsrOrder=$Order` |
+| remember | `remember <code> as $name` | `IValueElement` | `remember UsrNumber as $first` |
+| remember-record | `remember-record <object> Column=Value;... as $name` | none (OData, exactly one record) | `remember-record UsrOrder UsrName=Bed as $order` |
+| check-count | `check-count <object> Column=Value;... eq\|ne\|gt\|ge\|lt\|le <number>\|$name` | none (OData) | `check-count UsrOrderLog UsrOrder=$Order eq 1` |
+| check-distinct | `check-distinct <object> <column> where Column=Value;...` | none (OData) | `check-distinct UsrOrder UsrNumber where UsrName=Bed` |
 | check-row | `check-row <code> Column=Value;Column=Value [not] exists` | `IRowed` | `check-row Products Product=Pump;Quantity=2 exists` |
 | select-row | `select-row <code> Column=Value;Column=Value` | `IRowed` | `select-row Products Product=Pump` |
 | delete-row | `delete-row <code> Column=Value;Column=Value` | `IRowed` | `delete-row Products Product=Pump` |
@@ -122,8 +130,9 @@ rest as text. A lookup result is its id.
 
 `check-record` builds an OData filter from the list: a GUID, `true`/`false` and a number go
 unquoted, everything else is a string; a lookup column given a GUID is addressed by its `Id`
-suffix (`UsrContact=<guid>` reads `UsrContactId`). Only existence is asserted, which is enough
-to prove that a process created, found or removed what it should have.
+suffix (`UsrContact=<guid>` reads `UsrContactId`). `[not] exists` asserts existence, which is
+enough to prove that a process created, found or removed what it should have; `has <column> <op>
+<value>` compares a column of the record (see "Cases that write").
 
 ```jsonc
 // Configuration/processes/UsrOrder_Process.json
@@ -141,6 +150,70 @@ to prove that a process created, found or removed what it should have.
 `direction` is `in`, `out` or `variable` (both). The file is what the process schema declares;
 the knowledge base's `proc.py test-config <package> <Process> --out <file>` writes it from the
 package, so a process built as files describes itself for its tests.
+
+## Cases that write
+
+A case may write data the way a user would and then assert what the backend did in response - an
+entity event listener, a database trigger created by a SQL script, a default, a computed column.
+OData is the case's CRUD API and nothing more: a SQL script runs at `clio push-pkg`, a case proves its
+effect, it never runs SQL.
+
+```
+# writes
+# ac: AC-01
+use Supervisor
+insert UsrOrder as Order set UsrName=Listener bed;UsrAmount=500
+check-record UsrOrder Id=$Order has UsrAmount eq 500
+update UsrOrder $Order set UsrAmount=5000
+check-record UsrOrderLog UsrOrder=$Order;UsrKind=Big exists
+check-count UsrOrderLog UsrOrder=$Order eq 1
+delete-record UsrOrderLog UsrOrder=$Order
+delete UsrOrder $Order
+```
+
+- **Writes.** `insert` posts the record and binds its Id to the alias: `insert ... as Order` makes
+  `$Order`. `update` patches and `delete` deletes a record named by `$alias` or a GUID. `delete-record`
+  deletes every record matching a filter - the records a page or a process created, which the case
+  has no alias for; more than 20 matches is refused with the count, no match fails. Values are typed
+  like the filters: a GUID, `true`/`false` and a number unquoted, the rest text; a lookup given a GUID
+  is written to its `Id` column (`UsrStatus=<guid>` writes `UsrStatusId`); a value naming a static value
+  is written as that value. The writes go as the first configured user, with `BPMCSRF` and
+  `ForceUseSession`; a refused write fails the line with what Creatio answered.
+- **Cleanup.** Every record a case inserts is deleted when the case ends, newest first - passed,
+  failed or stopped early - unless the `insert` line says `keep`. `delete` and `delete-record`
+  take a record off that list. A record the cleanup cannot delete fails the case as a run error naming
+  it: data left behind is not a pass.
+- **Variables.** `$name` holds text: an insert alias, `remember <code> as $name` (what an element
+  shows), `remember-record <object> <filter> as $name` (the Id of the one matching record; none or
+  several fail). A `$name` is substituted in every unquoted argument - filters, values, `update` /
+  `delete` targets, `open <page> for $name`, `check-value <code> eq $name`. A name used before the line
+  that defines it is a validation error. `$name+N` / `$name-N` computes an integer and is allowed only
+  as the value `check-value` compares with: `check-value UsrNumber eq $first+1`.
+- **Record asserts.** `check-record <object> <filter> has <column> <op> <value>` reads the column of
+  the matching record (no record fails on its own) and compares it with the operators of
+  `check-value`: a number as a number and a date as a date when both sides parse, the rest as text. A
+  lookup compares by id - give a GUID and the `Id` column is read. `check-count` counts the filtered
+  set (`/$count`, `$count=true` where a version refuses the bare segment). `check-distinct` fails when
+  two matching records share the column's value - two records saved at once got different numbers.
+- **`# writes`** is a header directive (a `#` line before the first command). It makes the case
+  stop at its first failure whatever `continueOnFailure` says - a failed `set` must not be followed
+  by a Save - and validation refuses an inserted alias that is neither deleted later in the case nor
+  marked `keep`. Cleanup runs for every case either way; the directive makes the author say it.
+- **`# ac: AC-02`** names the acceptance criterion the case proves. Run with
+  `--task-folder <dir>` (and optionally `--task <id>`), every case writes
+  `<dir>/evidence/AC-02-report-N.txt` - each line with its outcome, the failed steps, the console
+  errors - and `AC-02-report-N.table.md`, a draft row of the tester's report table
+  (`| AC | Result | Evidence |`). N is the next number free; a case without `# ac:` is named by its file.
+- **Console.** `check console no errors [except "<regex>"]` fails when the browser console logged an
+  error (or the page threw) on any page the case opened so far, apart from the ones the regex matches;
+  the regex is compiled during validation. `captureConsole: true` in `run.config.json` also puts each
+  case's console errors into the text, HTML and JUnit reports.
+- **`on <page>`** now checks the claim: before rebinding it waits up to `pageCheckTimeoutMs` for at
+  least one element of that page's file (elements on no tab first) and otherwise fails naming the
+  ones it looked for, instead of a later line failing with a bare "not found".
+
+A process case and a page case can both write; the examples are `ProcessCases/order-writes.act.exp`
+and `Cases/ia-order-writes.act.exp`.
 
 ## Element Types
 
@@ -431,7 +504,7 @@ All paths are relative to the working directory.
 | `pages/*.json` | one file per page: `name`, `url`, `type` (`FreedomUI`, the default, or `ClassicUI`), `schema` (Classic only: the page schema name), and `elements` (`code`, `label`, `type`, optional `tab` and `pinned`, plus type-specific options such as a Classic element's `name` or a Save button's `isSave`). The page is implied by the file, so elements never repeat it. |
 | `objects.config.json` | `objects`: `name`, `sectionPage`, `formPage`, `newButton`, `saveButton`, `fields` mapping codes to static-value names |
 | `static.values.json` | object mapping static names to scalar values |
-| `run.config.json` | `headless`, `continueOnFailure`, `runAnalysis`, `viewportWidth`, `viewportHeight`, `elementTimeoutMs`, `absenceTimeoutMs`, `pageLoadTimeoutMs`, `reportsDirectory`, `reports`, `skipFilePrefix` |
+| `run.config.json` | `headless`, `continueOnFailure`, `runAnalysis`, `viewportWidth`, `viewportHeight`, `elementTimeoutMs`, `absenceTimeoutMs`, `pageCheckTimeoutMs` (the `on <page>` check, 15000), `pageLoadTimeoutMs`, `captureConsole` (console errors into the reports), `reportsDirectory`, `reports`, `skipFilePrefix` |
 
 `viewportWidth` and `viewportHeight` (1600 x 950 by default) fix the size of the browser window every
 case runs in. This is part of a run's definition rather than a property of whoever's machine it runs

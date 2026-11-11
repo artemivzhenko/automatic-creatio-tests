@@ -50,6 +50,11 @@ public sealed class ComparisonValidator : ICommandValidator
         }
 
         var expected = command.Arguments[2];
+        if (!expected.IsQuoted && expected.Value.StartsWith('$'))
+        {
+            return ValidationResult.Ok(target);  // a case variable: its name was checked, its value exists at run time
+        }
+
         var literal = expected.IsQuoted
             ? expected.Value
             : context.StaticValues.TryGetValue(expected.Value, out var staticValue)

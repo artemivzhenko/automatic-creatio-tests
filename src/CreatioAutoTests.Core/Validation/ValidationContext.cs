@@ -47,6 +47,19 @@ public sealed class ValidationContext
     public bool UserDeclared { get; internal set; }
 
     /// <summary>
+    /// The <c>$name</c> values defined by the lines validated so far. A name is checked here; its value
+    /// exists only at run time.
+    /// </summary>
+    public ISet<string> Variables { get; } = new HashSet<string>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// The case's header directives (<c># writes</c>, <c># ac: AC-02</c>), read by
+    /// <see cref="Execution.ScriptParser.Directives"/>; keys lower case, a bare directive has an empty value.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Directives { get; init; } =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
     /// Resolves an element code against the current page, producing the message the author needs
     /// when it fails: no page open, or the code is unknown on this page.
     /// </summary>

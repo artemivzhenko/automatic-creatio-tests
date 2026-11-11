@@ -10,7 +10,7 @@ public sealed class OpenCommand : ICommand
     public Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken = default)
     {
         var pageName = context.Command.ValueAt(0)!;
-        var recordId = context.Command.ArgumentCount == 3 ? context.Command.ValueAt(2) : null;
+        var recordId = context.Command.ArgumentCount == 3 ? context.Substitute(context.Command.ValueAt(2)!) : null;
 
         return context.Session.OpenPageAsync(pageName, recordId, cancellationToken);
     }

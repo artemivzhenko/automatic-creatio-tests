@@ -19,10 +19,11 @@ public sealed class CreatioODataClient : IDisposable
     private readonly SiteConfig _site;
     private readonly ILogger<CreatioODataClient> _logger;
     private readonly CookieContainer _cookies = new();
-    private readonly HttpClientHandler _handler;
+    private readonly HttpMessageHandler _handler;
     private readonly HttpClient _client;
 
     private bool _authenticated;
+    private string? _csrf;
 
     /// <summary>Creates a client for the configured instance.</summary>
     /// <param name="environment">Instance address and the users that may sign in to it.</param>
@@ -32,6 +33,23 @@ public sealed class CreatioODataClient : IDisposable
         EnvironmentConfig environment,
         SiteConfig site,
         ILogger<CreatioODataClient> logger)
+        : this(environment, site, logger, null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a client over a given message handler, so that the shape of every request can be checked
+    /// without an instance. The CSRF value of the login is then read from the answer's headers.
+    /// </summary>
+    /// <param name="environment">Instance address and the users that may sign in to it.</param>
+    /// <param name="site">Service paths shared by every environment.</param>
+    /// <param name="logger">Receives the progress of each request.</param>
+    /// <param name="handler">Sends the requests; null for the real one with a cookie container.</param>
+    public CreatioODataClient(
+        EnvironmentConfig environment,
+        SiteConfig site,
+        ILogger<CreatioODataClient> logger,
+        HttpMessageHandler? handler)
     {
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _site = site ?? throw new ArgumentNullException(nameof(site));
@@ -39,7 +57,7 @@ public sealed class CreatioODataClient : IDisposable
 
         BaseUrl = _environment.BaseUrl.TrimEnd('/');
 
-        _handler = new HttpClientHandler
+        _handler = handler ?? new HttpClientHandler
         {
             CookieContainer = _cookies,
             UseCookies = true,
@@ -94,6 +112,13 @@ public sealed class CreatioODataClient : IDisposable
             .ConfigureAwait(false);
 
         response.EnsureSuccessStatusCode();
+
+        // A handler without a cookie container still sees the header; the CSRF value is what every write echoes.
+        if (response.Headers.TryGetValues("Set-Cookie", out var setCookies))
+        {
+            _csrf = setCookies.Select(c => c.Split(';')[0]).Where(c => c.StartsWith("BPMCSRF=", StringComparison.Ordinal))
+                .Select(c => c["BPMCSRF=".Length..]).LastOrDefault() ?? _csrf;
+        }
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         using var parsed = JsonDocument.Parse(body);
@@ -197,10 +222,107 @@ public sealed class CreatioODataClient : IDisposable
         });
 
         var path = (_site.ProcessStartPath ?? "/0/ServiceModel/ProcessEngineService.svc/RunProcess").Trim();
-        using var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + (path.StartsWith('/') ? path : "/" + path));
-        request.Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+        var body = await SendAsync(HttpMethod.Post, path.StartsWith('/') ? path : "/" + path, payload, "RunProcess '" + schemaName + "'", cancellationToken)
+            .ConfigureAwait(false);
 
-        var csrf = _cookies.GetCookies(new Uri(BaseUrl))["BPMCSRF"]?.Value;
+        _logger.LogDebug("RunProcess {Process}: {Body}", schemaName, body[..Math.Min(body.Length, 400)]);
+        return ProcessRunResult.Parse(schemaName, body);
+    }
+
+    /// <summary>
+    /// Inserts a record and returns its <c>Id</c>. The body is typed by <see cref="Execution.ODataValues"/>,
+    /// as the filters of the checks are, so a value is written the way it is later compared.
+    /// </summary>
+    /// <param name="entity">Entity set, for example <c>UsrOrder</c>.</param>
+    /// <param name="values">Column values as JSON-ready objects, keyed by the OData column name.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    public async Task<Guid> InsertAsync(string entity, IReadOnlyDictionary<string, object?> values, CancellationToken cancellationToken = default)
+    {
+        await AuthenticateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var body = await SendAsync(HttpMethod.Post, EntityPath(entity), JsonSerializer.Serialize(values), "insert into '" + entity + "'", cancellationToken)
+            .ConfigureAwait(false);
+
+        using var document = JsonDocument.Parse(body);
+        return document.RootElement.TryGetProperty("Id", out var id) && id.TryGetGuid(out var guid)
+            ? guid
+            : throw new InvalidOperationException("insert into '" + entity + "' answered without an Id: " + body[..Math.Min(body.Length, 400)]);
+    }
+
+    /// <summary>Changes columns of one record (<c>PATCH</c>).</summary>
+    /// <param name="entity">Entity set.</param>
+    /// <param name="id">The record.</param>
+    /// <param name="values">Column values keyed by the OData column name.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    public async Task UpdateAsync(string entity, Guid id, IReadOnlyDictionary<string, object?> values, CancellationToken cancellationToken = default)
+    {
+        await AuthenticateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        await SendAsync(HttpMethod.Patch, EntityPath(entity) + "(" + id + ")", JsonSerializer.Serialize(values), "update of '" + entity + "' " + id, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>Deletes one record.</summary>
+    /// <param name="entity">Entity set.</param>
+    /// <param name="id">The record.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    public async Task DeleteAsync(string entity, Guid id, CancellationToken cancellationToken = default)
+    {
+        await AuthenticateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        await SendAsync(HttpMethod.Delete, EntityPath(entity) + "(" + id + ")", null, "delete of '" + entity + "' " + id, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Counts the records matching a filter: <c>/$count</c>, and <c>$count=true</c> with <c>@odata.count</c>
+    /// when a version refuses the bare segment.
+    /// </summary>
+    /// <param name="entity">Entity set.</param>
+    /// <param name="filter">OData filter expression, or null for every record.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    public async Task<long> CountAsync(string entity, string? filter, CancellationToken cancellationToken = default)
+    {
+        await AuthenticateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var encoded = filter is null ? null : HttpUtility.UrlEncode(filter);
+
+        try
+        {
+            var bare = await SendAsync(HttpMethod.Get, EntityPath(entity) + "/$count" + (encoded is null ? string.Empty : "?$filter=" + encoded),
+                null, "count of '" + entity + "'", cancellationToken).ConfigureAwait(false);
+            if (long.TryParse(bare.Trim().Trim('\uFEFF'), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var count))
+            {
+                return count;
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogDebug("Bare $count of {Entity} refused ({Message}); asking for @odata.count.", entity, ex.Message);
+        }
+
+        var body = await SendAsync(HttpMethod.Get, EntityPath(entity) + "?$count=true&$top=0" + (encoded is null ? string.Empty : "&$filter=" + encoded),
+            null, "count of '" + entity + "'", cancellationToken).ConfigureAwait(false);
+        using var document = JsonDocument.Parse(body);
+        return document.RootElement.TryGetProperty("@odata.count", out var counted)
+            ? counted.GetInt64()
+            : throw new InvalidOperationException("count of '" + entity + "' answered without @odata.count.");
+    }
+
+    private string EntityPath(string entity) => (_site.ODataBasePath ?? "/0/odata").TrimEnd('/') + "/" + entity;
+
+    /// <summary>
+    /// One request: JSON in and out, the CSRF value echoed and <c>ForceUseSession</c> set, which cookie-based
+    /// OData writes need. A non-2xx answer throws with the first 400 characters of the body - what Creatio says
+    /// about a refused write.
+    /// </summary>
+    private async Task<string> SendAsync(HttpMethod method, string path, string? json, string what, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(method, BaseUrl + path);
+        request.Headers.Add("Accept", "application/json");
+        request.Headers.Add("ForceUseSession", "true");
+        if (json is not null)
+        {
+            request.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        }
+
+        var csrf = _cookies.GetCookies(new Uri(BaseUrl))["BPMCSRF"]?.Value ?? _csrf;
         if (!string.IsNullOrEmpty(csrf))
         {
             request.Headers.Add("BPMCSRF", csrf);
@@ -211,13 +333,10 @@ public sealed class CreatioODataClient : IDisposable
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(
-                "RunProcess '" + schemaName + "' failed with " + (int)response.StatusCode + ": " +
-                body[..Math.Min(body.Length, 400)]);
+            throw new InvalidOperationException(what + " failed with " + (int)response.StatusCode + ": " + body[..Math.Min(body.Length, 400)]);
         }
 
-        _logger.LogDebug("RunProcess {Process}: {Body}", schemaName, body[..Math.Min(body.Length, 400)]);
-        return ProcessRunResult.Parse(schemaName, body);
+        return body;
     }
 
     private Uri BuildAuthUri()

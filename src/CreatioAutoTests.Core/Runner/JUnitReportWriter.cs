@@ -68,6 +68,11 @@ public sealed class JUnitReportWriter : IReportWriter
                 await writer.WriteEndElementAsync().ConfigureAwait(false);
             }
 
+            if (testCase.ConsoleErrors.Count > 0)
+            {
+                await writer.WriteElementStringAsync(null, "system-err", null, string.Join(Environment.NewLine, testCase.ConsoleErrors)).ConfigureAwait(false);
+            }
+
             await writer.WriteEndElementAsync().ConfigureAwait(false);
         }
 

@@ -43,6 +43,7 @@ public sealed class HtmlReportWriter : IReportWriter
         html.Append("<details").Append(testCase.Success ? string.Empty : " open=\"open\"").Append("><summary class=\"").Append(testCase.Success ? "pass" : "fail").Append("\">").Append(testCase.Success ? "PASS " : "FAIL ").Append(Encode(testCase.Name)).Append(" (").Append(testCase.Duration.TotalSeconds.ToString("0.00", CultureInfo.InvariantCulture)).Append("s)</summary>");
         if (!testCase.IsValid) html.Append("<pre>").Append(Encode(string.Join(Environment.NewLine, testCase.ValidationIssues))).Append("</pre>");
         if (testCase.RunError is not null) html.Append("<pre>").Append(Encode(testCase.RunError)).Append("</pre>");
+        if (testCase.ConsoleErrors.Count > 0) html.Append("<pre>console:").Append(Environment.NewLine).Append(Encode(string.Join(Environment.NewLine, testCase.ConsoleErrors))).Append("</pre>");
         if (testCase.Outcomes.Count > 0)
         {
             html.Append("<table><tr><th>Line</th><th>Command</th><th>Outcome</th><th>Duration</th></tr>");

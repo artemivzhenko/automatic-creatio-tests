@@ -37,6 +37,12 @@ public sealed class TestCaseResult
     /// <summary>One outcome for each execution attempt after successful validation.</summary>
     public List<CommandOutcome> Outcomes { get; } = new();
 
+    /// <summary>The acceptance criterion the case proves (<c># ac:</c>), or null.</summary>
+    public string? AcceptanceCriterion { get; init; }
+
+    /// <summary>Browser console errors of the case, when the run settings ask to capture them.</summary>
+    public IReadOnlyList<string> ConsoleErrors { get; set; } = Array.Empty<string>();
+
     /// <summary>Set when the run itself broke, as opposed to a test assertion failing.</summary>
     public string? RunError { get; set; }
 

@@ -86,6 +86,26 @@ public sealed class CommandContext
             return token.Value;
         }
 
-        return Session.StaticValues.TryGetValue(token.Value, out var staticValue) ? staticValue : token.Value;
+        var value = Substitute(token.Value);
+        return Session.StaticValues.TryGetValue(value, out var staticValue) ? staticValue : value;
+    }
+
+    /// <summary>Replaces the case's <c>$name</c> references in an unquoted argument with their values.</summary>
+    public string Substitute(string text) =>
+        CaseVariables.Substitute(text, Session.Variables);
+
+    /// <summary>
+    /// Rejoins a <c>Column=Value;...</c> list after substituting <c>$name</c> in its unquoted tokens, and parses it.
+    /// Validation accepted the shape, so a parse error here is a substituted value that broke it.
+    /// </summary>
+    public IReadOnlyList<RecordAssignment> Assignments(IEnumerable<CommandToken> tokens)
+    {
+        var text = RecordAssignments.Rejoin(tokens.Select(t => t.IsQuoted ? t : t with { Value = Substitute(t.Value) }));
+        if (!RecordAssignments.TryParse(text, out var assignments, out var error))
+        {
+            throw new CommandFailedException("'" + Command.RawText + "' cannot be read once its values are filled in: " + error + ".");
+        }
+
+        return assignments;
     }
 }

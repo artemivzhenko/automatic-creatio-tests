@@ -26,6 +26,25 @@ public sealed class StateCheckValidator : ICommandValidator
                 "'check <code> is [not] required|readonly|editable' or 'check <code> columns'.");
         }
 
+        if (ConsoleForm(command, out var except) is { } consoleForm)
+        {
+            if (!consoleForm)
+            {
+                return ValidationResult.Fail("'check console' reads 'check console no errors [except \"<regex>\"]'.");
+            }
+
+            try
+            {
+                _ = except is null ? null : new System.Text.RegularExpressions.Regex(except);
+            }
+            catch (ArgumentException ex)
+            {
+                return ValidationResult.Fail("'check console ... except' has a regex that does not compile: " + ex.Message);
+            }
+
+            return ValidationResult.Ok();
+        }
+
         var code = command.ValueAt(0)!;
         if (!context.TryResolve(code, out var target, out var resolveError))
         {
@@ -46,6 +65,38 @@ public sealed class StateCheckValidator : ICommandValidator
                 "' is not a known form. Use '[not] exists', 'is [not] required|readonly|editable' " +
                 "or 'columns'.")
         };
+    }
+
+    /// <summary>
+    /// 'check console no errors [except "regex"]': null when the line is about an element, false when it names the
+    /// console in a wrong form, true for the right form with the optional regex.
+    /// </summary>
+    public static bool? ConsoleForm(ParsedCommand command, out string? except)
+    {
+        except = null;
+        if (command.ArgumentAt(0) is not { IsQuoted: false } first || !string.Equals(first.Value, "console", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var words = command.Arguments.Skip(1).Take(2).Select(a => a.Value.ToLowerInvariant()).ToArray();
+        if (words is not ["no", "errors"])
+        {
+            return false;
+        }
+
+        if (command.ArgumentCount == 3)
+        {
+            return true;
+        }
+
+        if (command.ArgumentCount == 5 && DataShapes.Is(command, 3, "except") && command.Arguments[4].IsQuoted)
+        {
+            except = command.Arguments[4].Value;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>

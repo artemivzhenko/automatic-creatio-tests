@@ -21,6 +21,16 @@ public sealed record ResolvedTarget(string Code, CatalogEntry Entry)
     public override string ToString() => Entry.ToString();
 }
 
+/// <summary>
+/// What a command does to the case's <c>$name</c> table, seen statically: it defines a name (an insert alias
+/// or a remembered value), or deletes the record an alias names.
+/// </summary>
+/// <param name="Defines">The name the command sets, or null.</param>
+/// <param name="Inserts">The name is the alias of a record this command inserts.</param>
+/// <param name="Kept">The inserted record is marked <c>keep</c>: it outlives the case.</param>
+/// <param name="Deletes">The alias whose record this command deletes, or null.</param>
+public sealed record VariableEffect(string? Defines, bool Inserts = false, bool Kept = false, string? Deletes = null);
+
 /// <summary>Outcome of validating one command.</summary>
 public sealed class ValidationResult
 {
@@ -68,6 +78,13 @@ public sealed class ValidationResult
 
     /// <summary>True for 'use', which is what satisfies the "a script starts with use" rule.</summary>
     public bool DeclaresUser { get; }
+
+    /// <summary>What the command does to the case's variables; null for most commands.</summary>
+    public VariableEffect? Variable { get; private init; }
+
+    /// <summary>The same success, also recording what the command does to the case's variables.</summary>
+    public ValidationResult WithVariable(VariableEffect effect) =>
+        new(IsValid, Error, Targets, NextPage, DeclaresUser, NextProcess) { Variable = effect };
 
     /// <summary>Creates a successful result for a targetless command.</summary>
     public static ValidationResult Ok() => new(true, null, NoTargets, null, false);

@@ -35,6 +35,18 @@ public sealed class RunSettings
     /// </summary>
     public int AbsenceTimeoutMs { get; set; } = 1500;
 
+    /// <summary>
+    /// Budget for 'on &lt;page&gt;' (and 'create') to see at least one element of the page it rebinds to,
+    /// milliseconds. The element timeout, so a slow form is not mistaken for the wrong page.
+    /// </summary>
+    public int PageCheckTimeoutMs { get; set; } = 15_000;
+
+    /// <summary>
+    /// Put the browser console errors and uncaught page errors of each case into the reports. They are
+    /// collected either way, for 'check console no errors'.
+    /// </summary>
+    public bool CaptureConsole { get; set; }
+
     /// <summary>Timeout for the Creatio loading overlay to disappear, milliseconds.</summary>
     public int PageLoadTimeoutMs { get; set; } = 60_000;
 

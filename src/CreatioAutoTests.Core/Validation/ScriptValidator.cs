@@ -44,6 +44,8 @@ public sealed class ScriptValidator
         context.CurrentPage = null;
         context.CurrentProcess = null;
         context.UserDeclared = false;
+        context.Variables.Clear();
+        var inserted = new Dictionary<string, (ParsedCommand Line, bool Kept)>(StringComparer.Ordinal);
 
         if (commands.Count == 0)
         {
@@ -72,6 +74,13 @@ public sealed class ScriptValidator
                     parsed.LineNumber,
                     parsed.RawText,
                     "A test case must start with 'use <username>'."));
+            }
+
+            var referenceError = CheckReferences(parsed, context);
+            if (referenceError is not null)
+            {
+                issues.Add(new ValidationIssue(parsed.LineNumber, parsed.RawText, referenceError));
+                continue;
             }
 
             var validator = ResolveValidator(registration);
@@ -131,12 +140,82 @@ public sealed class ScriptValidator
             }
 
             ApplyStateTransition(context, result);
+            if (result.Variable is { } effect)
+            {
+                if (effect.Defines is not null)
+                {
+                    context.Variables.Add(effect.Defines);
+                    if (effect.Inserts)
+                    {
+                        inserted[effect.Defines] = (parsed, effect.Kept);
+                    }
+                }
+
+                if (effect.Deletes is not null)
+                {
+                    inserted.Remove(effect.Deletes);
+                }
+            }
+
             steps.Add(new ExecutionStep(parsed, registration, result.Targets));
         }
 
-        return issues.Count == 0
+        // '# writes' states the author's intent: every record the case inserts is deleted by the case or kept on purpose.
+        var writes = context.Directives.ContainsKey(WritesDirective);
+        if (writes)
+        {
+            foreach (var (alias, (line, kept)) in inserted.Where(i => !i.Value.Kept))
+            {
+                issues.Add(new ValidationIssue(line.LineNumber, line.RawText,
+                    "'# writes': the record inserted as '" + alias + "' is neither deleted later ('delete <object> $" + alias +
+                    "') nor marked 'keep' ('insert <object> as " + alias + " keep set ...')."));
+            }
+        }
+
+        var plan = issues.Count == 0
             ? ExecutionPlan.Valid(testName, filePath, steps, warnings)
             : ExecutionPlan.Invalid(testName, filePath, issues, warnings);
+        plan.StopOnFailure = writes;
+        plan.AcceptanceCriterion = context.Directives.TryGetValue(AcDirective, out var ac) && ac.Length > 0 ? ac : null;
+        return plan;
+    }
+
+    /// <summary>Header directive: the case writes data; stop at the first failure and account for every insert.</summary>
+    public const string WritesDirective = "writes";
+
+    /// <summary>Header directive: the acceptance criterion the case proves, for its evidence files.</summary>
+    public const string AcDirective = "ac";
+
+    /// <summary>
+    /// A <c>$name</c> in an unquoted argument must be defined by an earlier line; the token after <c>as</c> is the
+    /// definition itself. <c>$name+N</c> computes a number, so it is only the value 'check-value' compares with.
+    /// </summary>
+    private static string? CheckReferences(ParsedCommand parsed, ValidationContext context)
+    {
+        for (var i = 0; i < parsed.ArgumentCount; i++)
+        {
+            var token = parsed.Arguments[i];
+            if (token.IsQuoted || (i > 0 && string.Equals(parsed.Arguments[i - 1].Value, "as", StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            foreach (var (name, hasOffset) in CaseVariables.References(token.Value))
+            {
+                if (!context.Variables.Contains(name))
+                {
+                    return "'$" + name + "' is used before a line defines it: 'insert <object> as " + name +
+                           " set ...', 'remember <code> as $" + name + "' or 'remember-record <object> <filter> as $" + name + "'.";
+                }
+
+                if (hasOffset && !(string.Equals(parsed.Keyword, "check-value", StringComparison.OrdinalIgnoreCase) && i == 2))
+                {
+                    return "'" + token.Value + "' computes a number; it is only allowed as the value 'check-value' compares with.";
+                }
+            }
+        }
+
+        return null;
     }
 
     private static bool IsUserDeclaration(CommandRegistration registration) =>

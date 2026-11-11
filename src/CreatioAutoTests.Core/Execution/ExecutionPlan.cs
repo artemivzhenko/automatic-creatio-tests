@@ -55,6 +55,15 @@ public sealed class ExecutionPlan
     /// <summary>Non-blocking validation warnings associated with source lines.</summary>
     public IReadOnlyList<ValidationIssue> Warnings { get; }
 
+    /// <summary>
+    /// Stop at the first failed command whatever <c>ContinueOnFailure</c> says: set by <c># writes</c>, because a
+    /// case that writes must not go on to save after a step that did not happen.
+    /// </summary>
+    public bool StopOnFailure { get; set; }
+
+    /// <summary>The acceptance criterion the case proves (<c># ac: AC-02</c>), or null; names its evidence files.</summary>
+    public string? AcceptanceCriterion { get; set; }
+
     /// <summary>Whether the plan has no validation issues and may be executed.</summary>
     public bool IsValid => Issues.Count == 0;
 

@@ -44,6 +44,42 @@ public sealed class ScriptParser
         return result;
     }
 
+    /// <summary>
+    /// The header directives: the <c># key</c> and <c># key: value</c> comment lines before the first command,
+    /// for example <c># writes</c> and <c># ac: AC-02</c>. Keys are lower case; a bare key has an empty value.
+    /// A comment of several words without a colon is just a comment.
+    /// </summary>
+    public static IReadOnlyDictionary<string, string> Directives(IEnumerable<string> lines)
+    {
+        ArgumentNullException.ThrowIfNull(lines);
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+            if (trimmed.Length == 0)
+            {
+                continue;
+            }
+
+            if (trimmed[0] != CommentPrefix)
+            {
+                break;
+            }
+
+            var match = DirectivePattern.Match(trimmed);
+            if (match.Success)
+            {
+                result[match.Groups[1].Value.ToLowerInvariant()] = match.Groups[2].Value.Trim();
+            }
+        }
+
+        return result;
+    }
+
+    private static readonly System.Text.RegularExpressions.Regex DirectivePattern =
+        new(@"^#\s*([A-Za-z][\w-]*)\s*(?::\s*(.*))?$", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
     /// <summary>Reads and tokenizes every meaningful line in a script file.</summary>
     public IReadOnlyList<ParsedCommand> ParseFile(string path) => Parse(File.ReadAllLines(path));
 

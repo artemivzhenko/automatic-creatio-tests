@@ -73,4 +73,38 @@ public interface IExecutionSession
 
     /// <summary>Whether at least one record of the object matches the OData filter.</summary>
     Task<bool> RecordExistsAsync(string entity, string filter, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The case's <c>$name</c> values: insert aliases and remembered values, one table. Substituted into
+    /// unquoted arguments before a line runs (<see cref="CaseVariables.Substitute"/>).
+    /// </summary>
+    IDictionary<string, string> Variables { get; }
+
+    /// <summary>
+    /// Inserts a record over OData as the case's backend user and returns its Id. Unless <paramref name="keep"/>
+    /// is set, the record joins the cleanup list and is deleted when the case ends, passed or not.
+    /// </summary>
+    Task<string> InsertRecordAsync(string entity, IReadOnlyList<RecordAssignment> values, bool keep, CancellationToken cancellationToken = default);
+
+    /// <summary>Changes columns of one record over OData.</summary>
+    Task UpdateRecordAsync(string entity, string id, IReadOnlyList<RecordAssignment> values, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes one record over OData; a record the case inserted leaves the cleanup list.</summary>
+    Task DeleteRecordAsync(string entity, string id, CancellationToken cancellationToken = default);
+
+    /// <summary>Reads at most <paramref name="top"/> rows of the filtered set, the selected columns as text.</summary>
+    Task<IReadOnlyList<IReadOnlyDictionary<string, string>>> QueryRecordsAsync(
+        string entity, IReadOnlyList<string> select, string filter, int top, CancellationToken cancellationToken = default);
+
+    /// <summary>Counts the records matching the filter.</summary>
+    Task<long> CountRecordsAsync(string entity, string filter, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes what the case inserted and did not delete, newest first. Returns one line per record that
+    /// could not be deleted; the list is empty afterwards either way.
+    /// </summary>
+    Task<IReadOnlyList<string>> CleanupAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Browser console errors and uncaught page errors seen since the case started.</summary>
+    IReadOnlyList<string> ConsoleErrors { get; }
 }

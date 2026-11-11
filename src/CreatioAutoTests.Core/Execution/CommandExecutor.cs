@@ -40,7 +40,8 @@ public sealed class CommandExecutor
         {
             Name = plan.TestName,
             FilePath = plan.FilePath,
-            ValidationIssues = plan.Issues
+            ValidationIssues = plan.Issues,
+            AcceptanceCriterion = plan.AcceptanceCriterion,
         };
 
         if (!plan.IsValid)
@@ -50,19 +51,38 @@ public sealed class CommandExecutor
 
         var stopwatch = Stopwatch.StartNew();
 
-        foreach (var step in plan.Steps)
+        try
         {
-            var outcome = await ExecuteStepAsync(step, session, cancellationToken).ConfigureAwait(false);
-            result.Outcomes.Add(outcome);
-
-            if (outcome.Success)
+            foreach (var step in plan.Steps)
             {
-                continue;
+                var outcome = await ExecuteStepAsync(step, session, cancellationToken).ConfigureAwait(false);
+                result.Outcomes.Add(outcome);
+
+                if (outcome.Success)
+                {
+                    continue;
+                }
+
+                // A case that writes stops at its first failure: a later Save must not land after a step that did not happen.
+                if (!session.Settings.ContinueOnFailure || plan.StopOnFailure)
+                {
+                    break;
+                }
+            }
+        }
+        finally
+        {
+            // The records the case inserted go whatever happened; a record that stays is a broken run, not a pass.
+            var left = await session.CleanupAsync(CancellationToken.None).ConfigureAwait(false);
+            if (left.Count > 0)
+            {
+                result.RunError = "cleanup left " + left.Count + " record(s): " + string.Join("; ", left);
+                _logger.LogError("{Name}: {Error}", plan.TestName, result.RunError);
             }
 
-            if (!session.Settings.ContinueOnFailure)
+            if (session.Settings.CaptureConsole)
             {
-                break;
+                result.ConsoleErrors = session.ConsoleErrors.ToArray();
             }
         }
 

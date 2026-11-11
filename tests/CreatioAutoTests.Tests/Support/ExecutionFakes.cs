@@ -44,6 +44,75 @@ public sealed class FakeExecutionSession : IExecutionSession
 
     public Task<bool> RecordExistsAsync(string entity, string filter, CancellationToken cancellationToken = default) =>
         Task.FromResult(OnRecordExists?.Invoke(entity, filter) ?? false);
+
+    public IDictionary<string, string> Variables { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+    public List<string> Console { get; } = new();
+    public IReadOnlyList<string> ConsoleErrors => Console;
+
+    /// <summary>Every write, in order: "insert UsrOrder {id} UsrName=x", "update ...", "delete UsrOrder {id}".</summary>
+    public List<string> Writes { get; } = new();
+    public List<(string Entity, string Id)> Pending { get; } = new();
+    public int Cleanups { get; private set; }
+    public Func<string, IReadOnlyList<string>, string, int, IReadOnlyList<IReadOnlyDictionary<string, string>>>? OnQuery { get; init; }
+    public Func<string, string, long>? OnCount { get; init; }
+    public Func<string, string>? OnDelete { get; init; }
+    private int _next;
+
+    public Task<string> InsertRecordAsync(string entity, IReadOnlyList<RecordAssignment> values, bool keep, CancellationToken cancellationToken = default)
+    {
+        var id = new Guid(++_next, 0, 0, new byte[8]).ToString();
+        Writes.Add("insert " + entity + " " + id + " " + string.Join(";", values));
+        if (!keep)
+        {
+            Pending.Add((entity, id));
+        }
+
+        return Task.FromResult(id);
+    }
+
+    public Task UpdateRecordAsync(string entity, string id, IReadOnlyList<RecordAssignment> values, CancellationToken cancellationToken = default)
+    {
+        Writes.Add("update " + entity + " " + id + " " + string.Join(";", values));
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteRecordAsync(string entity, string id, CancellationToken cancellationToken = default)
+    {
+        if (OnDelete?.Invoke(id) is { } refusal)
+        {
+            throw new InvalidOperationException(refusal);
+        }
+
+        Writes.Add("delete " + entity + " " + id);
+        Pending.RemoveAll(p => p.Id == id);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<IReadOnlyDictionary<string, string>>> QueryRecordsAsync(string entity, IReadOnlyList<string> select, string filter, int top, CancellationToken cancellationToken = default) =>
+        Task.FromResult(OnQuery?.Invoke(entity, select, filter, top) ?? Array.Empty<IReadOnlyDictionary<string, string>>());
+
+    public Task<long> CountRecordsAsync(string entity, string filter, CancellationToken cancellationToken = default) =>
+        Task.FromResult(OnCount?.Invoke(entity, filter) ?? 0);
+
+    public async Task<IReadOnlyList<string>> CleanupAsync(CancellationToken cancellationToken = default)
+    {
+        Cleanups++;
+        var failures = new List<string>();
+        foreach (var (entity, id) in Enumerable.Reverse(Pending.ToArray()))
+        {
+            try
+            {
+                await DeleteRecordAsync(entity, id, cancellationToken);
+            }
+            catch (InvalidOperationException ex)
+            {
+                failures.Add(entity + " " + id + ": " + ex.Message);
+            }
+        }
+
+        Pending.Clear();
+        return failures;
+    }
 }
 
 public sealed class FakeUiElement : IUiElement

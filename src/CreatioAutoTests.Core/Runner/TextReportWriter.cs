@@ -95,6 +95,11 @@ public sealed class TextReportWriter : IReportWriter
                 builder.AppendLine("        " + failure.RawText);
             }
 
+            foreach (var error in testCase.ConsoleErrors)
+            {
+                builder.AppendLine("      console: " + error);
+            }
+
             builder.AppendLine();
         }
 

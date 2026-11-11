@@ -1,0 +1,13 @@
+# writes
+# ac: AC-01
+# A listener and a SQL trigger proved over OData, no browser: insert, read what the backend did, clean up.
+use Supervisor
+insert UsrOrder as Order set UsrName=Listener bed;UsrAmount=500
+check-record UsrOrder Id=$Order has UsrAmount eq 500
+update UsrOrder $Order set UsrAmount=5000
+check-record UsrOrderLog UsrOrder=$Order;UsrKind=Big exists
+check-count UsrOrderLog UsrOrder=$Order eq 1
+remember-record UsrOrderLog UsrOrder=$Order as $log
+check-record UsrOrderLog Id=$log has UsrKind eq "Big"
+delete-record UsrOrderLog UsrOrder=$Order
+delete UsrOrder $Order
