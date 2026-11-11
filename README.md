@@ -147,11 +147,37 @@ The process is described under [Configuration/processes](Configuration/processes
 parameters and their directions), so a wrong parameter or value fails in validation. See
 [docs/dsl.md](docs/dsl.md), "Process cases".
 
+## Cases That Write
+
+A case may create the data it needs over OData, assert what the backend did - an event listener,
+a trigger a SQL script created, a default - and clean up after itself:
+
+```act
+# writes
+# ac: AC-01
+use Supervisor
+insert UsrOrder as Order set UsrName=Listener bed;UsrAmount=500
+update UsrOrder $Order set UsrAmount=5000
+check-record UsrOrderLog UsrOrder=$Order;UsrKind=Big exists
+check-count UsrOrderLog UsrOrder=$Order eq 1
+delete-record UsrOrderLog UsrOrder=$Order
+```
+
+`insert` binds the new record's Id to `$Order`; `remember <code> as $x` and
+`remember-record <object> <filter> as $x` bind what a page shows or which record matched; every
+record a case inserts is deleted when it ends unless the `insert` says `keep`. `# writes` makes
+the case stop at its first failure and refuses an inserted alias that is neither deleted nor kept.
+`# ac: AC-01` names the acceptance criterion: run with `--task-folder <dir>` and every case writes
+`<dir>/evidence/AC-01-report-N.txt` with its outcome, failed steps and console errors, plus a draft
+row of the tester's report table. `check console no errors` fails on browser errors of the pages
+the case opened. See [docs/dsl.md](docs/dsl.md), "Cases that write".
+
 ## MCP Server
 
 [mcp-server/](mcp-server/README.md) exposes the utility to an agent: the DSL, the cases and
-page/process files, `validate`, `run`, `analyse`, `schemas` and the last report. It reads and
-runs only, so an agent that may test but not change gets this server alone.
+page/process files, `validate`, `run` (with the evidence folder of a task), `analyse`, `schemas`
+and the last report. It reads and runs only, so an agent that may test but not change gets this
+server alone.
 
 ## Extending It
 

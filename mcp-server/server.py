@@ -147,9 +147,12 @@ def validate(filter: str = "") -> str:
 
 
 @mcp.tool()
-def run(filter: str = "", verbose: bool = False) -> str:
-    """Runs the cases against the configured environment and returns the report. filter: part of a case name; runs everything when empty."""
+def run(filter: str = "", verbose: bool = False, task_folder: str = "", task: str = "") -> str:
+    """Runs the cases against the configured environment and returns the report. filter: part of a case name; runs everything when empty.
+    task_folder: the loop's task folder - every case writes <task_folder>/evidence/<AC>-report-N.txt (from its `# ac:` line) and a draft
+    report row; task: the task id named in that evidence."""
     args = (["--filter", filter] if filter else []) + (["--verbose"] if verbose else [])
+    args += (["--task-folder", task_folder] if task_folder else []) + (["--task", task] if task else [])
     return _cli(args)
 
 

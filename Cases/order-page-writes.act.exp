@@ -1,0 +1,14 @@
+# writes
+# ac: AC-02
+# A record inserted over OData opens on its page; the page shows what the record holds.
+use Supervisor
+insert UsrOrder as Order set UsrName=Remember bed;UsrQuantity=3
+open UsrOrderForm for $Order
+click GeneralInfoTab
+remember UsrQuantity as $quantity
+check-record UsrOrder Id=$Order has UsrQuantity eq $quantity
+remember-record UsrOrder UsrName=Remember bed as $same
+check-count UsrOrder Id=$same eq 1
+check-distinct UsrOrder UsrName where Id=$same
+check console no errors except "favicon"
+delete UsrOrder $Order

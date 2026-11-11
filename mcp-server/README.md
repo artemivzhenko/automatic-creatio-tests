@@ -11,7 +11,7 @@ in the tester role gets this server and nothing else, so it can prove but not ch
 | `cases(folder)`, `case(name)` | the `.act` files and their text |
 | `page_config(name)`, `process_config(name)` | `Configuration/pages/<name>.json`, `Configuration/processes/<name>.json` |
 | `validate(filter)` | `--validate-only`, no environment needed |
-| `run(filter, verbose)` | runs the cases, returns the report |
+| `run(filter, verbose, task_folder, task)` | runs the cases, returns the report; with `task_folder` every case writes `<dir>/evidence/<AC>-report-N.txt` (from its `# ac:` line) and a draft report row |
 | `analyse(page_path, name, include_hidden, dry_run)` | describes a live page |
 | `schemas(text, list_pages)` | the instance's page schemas |
 | `last_report()` | the newest `Reports/run-*.txt` |

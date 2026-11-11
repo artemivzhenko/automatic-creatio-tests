@@ -178,6 +178,9 @@ only failure the runner reports as a failed test rather than a broken run.
 | `tests/` | unit tests, no browser |
 | `Cases/`, `Analysis/` | `.act` scripts: test cases, and scripts that describe pages. `.act` is gitignored (written against someone's environment); bundled examples are `.act.exp`, which the runner skips |
 | `ProcessCases/` | `.act` scripts of the backend tier: `start` a process, `check-result`, `check-record`; no browser |
+| `src/CreatioAutoTests.Core/Session/CreatioODataClient.cs` | the one OData client: insert, update, delete, count, get, run a process; `BPMCSRF` and `ForceUseSession` on every call |
+| `src/CreatioAutoTests.Core/Execution/CaseVariables.cs`, `ODataValues.cs` | `$name` substitution and `$name+N`; the typing of filter literals and JSON values |
+| `src/CreatioAutoTests.Core/Runner/EvidenceWriter.cs` | `--task-folder <dir>`: `evidence/<AC>-report-N.txt` and a draft report row per case, from the `# ac:` directive |
 | `Configuration/pages/` | one file per page, holding the page and its elements |
 | `Configuration/processes/` | one file per process a case may start: parameters, types, directions |
 | `copilot/tasks/` | briefs for delegated work — gitignored, present only in the working tree |

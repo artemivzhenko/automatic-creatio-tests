@@ -58,6 +58,15 @@ def test_validate_runs_the_command_line():
     assert "warning: Код lies on tab GeneralInfoTab" in out, out
 
 
+def test_run_forwards_the_task_folder_without_running():
+    from unittest.mock import patch
+
+    with patch.object(server, "_cli", side_effect=lambda args, timeout=0: " ".join(args)) as cli:
+        out = server.run("contact", task_folder="C:/tasks/012", task="012")
+    assert out == "--filter contact --task-folder C:/tasks/012 --task 012", out
+    assert cli.call_count == 1
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

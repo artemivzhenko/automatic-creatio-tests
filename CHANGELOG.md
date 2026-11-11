@@ -8,6 +8,21 @@ All notable changes to this project are recorded here. The format follows
 
 ### Added
 
+- **Cases that write.** `insert <object> as <alias> set ...`, `update`, `delete` and
+  `delete-record <object> <filter>` (refused above 20 matches) write over OData through one client
+  (`CreatioODataClient`: `BPMCSRF`, `ForceUseSession`, a refused write fails the line with Creatio's
+  answer); every inserted record is deleted when the case ends unless the `insert` says `keep`, and
+  a record the cleanup cannot delete fails the case. `check-record ... has <column> <op> <value>`,
+  `check-count` and `check-distinct` assert what the backend did. Variables: an insert alias,
+  `remember <code> as $x`, `remember-record <object> <filter> as $x`, substituted in every unquoted
+  argument, `$x+N` as the value `check-value` compares with; a variable used before its line is a
+  validation error. Header directives: `# writes` (stop at the first failure; an inserted alias must
+  be deleted or kept) and `# ac: AC-nn` (the acceptance criterion the case proves). `--task-folder
+  <dir>` (and `--task <id>`) write `<dir>/evidence/<AC>-report-N.txt` and a draft report row per
+  case. `check console no errors [except "<regex>"]` fails on browser errors of the pages opened so
+  far; `captureConsole` puts them in every report. `on <page>` checks the page before rebinding and
+  names the elements it looked for. The MCP `run` tool takes `task_folder` and `task`.
+
 - **Classic UI.** A page file may declare `"type": "ClassicUI"` with the page `schema`, and the same
   DSL then drives a Classic (7.x) page inside the 8.x Shell. Element types keep their names --
   `Text`, `RichText`, `Integer`, `Decimal`, `Boolean`, `Date`, `Time`, `DateTime`, `Lookup`,

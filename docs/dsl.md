@@ -213,7 +213,7 @@ delete UsrOrder $Order
   ones it looked for, instead of a later line failing with a bare "not found".
 
 A process case and a page case can both write; the examples are `ProcessCases/order-writes.act.exp`
-and `Cases/ia-order-writes.act.exp`.
+and `Cases/order-page-writes.act.exp`.
 
 ## Element Types
 
