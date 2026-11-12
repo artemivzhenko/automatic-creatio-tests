@@ -40,6 +40,7 @@ public sealed class ScriptValidator
         var warnings = new List<ValidationIssue>();
         var steps = new List<ExecutionStep>();
         string? activeTab = null;
+        var shownConfirmed = new HashSet<string>(StringComparer.Ordinal);
 
         context.CurrentPage = null;
         context.CurrentProcess = null;
@@ -112,9 +113,12 @@ public sealed class ScriptValidator
                 }
             }
 
+            ConditionalWarning(parsed, result, shownConfirmed, warnings);
+
             if (result.NextPage is not null)
             {
                 activeTab = null;
+                shownConfirmed.Clear();
             }
             else if (result.Targets.Count > 0 && string.Equals(parsed.Keyword, "click", StringComparison.OrdinalIgnoreCase) &&
                      string.Equals(result.Targets[0].Definition.Type, "Tab", StringComparison.OrdinalIgnoreCase))
@@ -178,6 +182,43 @@ public sealed class ScriptValidator
         plan.StopOnFailure = writes;
         plan.AcceptanceCriterion = context.Directives.TryGetValue(AcDirective, out var ac) && ac.Length > 0 ? ac : null;
         return plan;
+    }
+
+    /// <summary>
+    /// A control a page rule toggles may be absent. 'exists' samples that once; 'set' and 'check-value' have no
+    /// wait of their own and fail after the whole element timeout. 'check X is shown' is the wait.
+    /// </summary>
+    private static void ConditionalWarning(
+        ParsedCommand parsed, ValidationResult result, ISet<string> shownConfirmed, List<ValidationIssue> warnings)
+    {
+        if (result.Targets.Count == 0 || !result.Targets[0].Definition.Conditional)
+        {
+            return;
+        }
+
+        var code = result.Targets[0].Code;
+        var rest = parsed.Arguments.Skip(1).Select(a => a.Value.ToLowerInvariant()).ToArray();
+        var isCheck = string.Equals(parsed.Keyword, "check", StringComparison.OrdinalIgnoreCase);
+        if (isCheck && rest is ["is", "shown"])
+        {
+            shownConfirmed.Add(code);
+        }
+        else if (isCheck && rest is ["is", "not", "shown"])
+        {
+            shownConfirmed.Remove(code);
+        }
+        else if (isCheck && rest is ["exists"] or ["not", "exists"])
+        {
+            warnings.Add(new ValidationIssue(parsed.LineNumber, parsed.RawText,
+                "a rule toggles " + code + "; 'check " + code + " is [not] shown' waits for it."));
+        }
+        else if ((string.Equals(parsed.Keyword, "set", StringComparison.OrdinalIgnoreCase) ||
+                  string.Equals(parsed.Keyword, "check-value", StringComparison.OrdinalIgnoreCase)) &&
+                 !shownConfirmed.Contains(code))
+        {
+            warnings.Add(new ValidationIssue(parsed.LineNumber, parsed.RawText,
+                "a rule toggles " + code + "; put 'check " + code + " is shown' before this line."));
+        }
     }
 
     /// <summary>Header directive: the case writes data; stop at the first failure and account for every insert.</summary>

@@ -183,6 +183,6 @@ public sealed class EditableValidationTests
         var plan = Validate("use tester", "open TestPage", "check AddressList is sortable");
 
         Assert.That(plan.IsValid, Is.False);
-        Assert.That(plan.Issues[0].Message, Does.Contain("'required', 'readonly' and 'editable'"));
+        Assert.That(plan.Issues[0].Message, Does.Contain("'required', 'readonly', 'editable' and 'shown'"));
     }
 }

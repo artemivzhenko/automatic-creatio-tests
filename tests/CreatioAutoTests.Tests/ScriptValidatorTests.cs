@@ -144,6 +144,67 @@ public class ScriptValidatorTests
         Assert.That(plan.Warnings[0].Message, Does.Contain("Name lies on tab GeneralInfoTab"));
     }
 
+    private void ConditionalPage()
+    {
+        var comment = CatalogBuilder.Element("Comment", "Text");
+        comment.Conditional = true;
+        _catalog = CatalogBuilder.Build(comment, CatalogBuilder.Element("Name", "Text"), CatalogBuilder.Element("SaveButton", "Button"));
+    }
+
+    [Test]
+    public void Check_shown_is_accepted_on_every_element_and_clears_the_set_warning()
+    {
+        ConditionalPage();
+        var plan = Validate("use tester", "open TestPage", "check Comment is not shown", "check Comment is shown",
+            "set Comment \"x\"", "check SaveButton is shown");
+
+        Assert.That(plan.IsValid, Is.True, plan.DescribeIssues());
+        Assert.That(plan.Warnings, Is.Empty);
+    }
+
+    [Test]
+    public void Check_not_shown_does_not_confirm_the_element_for_set()
+    {
+        ConditionalPage();
+        var plan = Validate("use tester", "open TestPage", "check Comment is not shown", "set Comment \"x\"",
+            "check Comment is shown", "check Comment is not shown", "set Comment \"y\"");
+
+        Assert.That(plan.IsValid, Is.True, plan.DescribeIssues());
+        Assert.That(plan.Warnings.Select(w => w.LineNumber), Is.EqualTo(new[] { 4, 7 }));
+    }
+
+    [Test]
+    public void Exists_on_a_conditional_element_warns_and_points_to_shown()
+    {
+        ConditionalPage();
+        var plan = Validate("use tester", "open TestPage", "check Comment exists", "check Comment not exists", "check Name exists");
+
+        Assert.That(plan.IsValid, Is.True, plan.DescribeIssues());
+        Assert.That(plan.Warnings.Select(w => w.LineNumber), Is.EqualTo(new[] { 3, 4 }));
+        Assert.That(plan.Warnings[0].Message, Does.Contain("check Comment is [not] shown"));
+    }
+
+    [Test]
+    public void Set_and_check_value_on_a_conditional_element_warn_until_a_shown_line_and_again_after_open()
+    {
+        ConditionalPage();
+        var plan = Validate("use tester", "open TestPage", "set Comment \"a\"", "check-value Comment eq \"a\"",
+            "check Comment is shown", "set Comment \"b\"", "open TestPage", "set Comment \"c\"");
+
+        Assert.That(plan.IsValid, Is.True, plan.DescribeIssues());
+        Assert.That(plan.Warnings.Select(w => w.LineNumber), Is.EqualTo(new[] { 3, 4, 8 }));
+    }
+
+    [Test]
+    public void An_unknown_code_in_check_shown_is_refused_with_the_two_ways_to_add_it()
+    {
+        ConditionalPage();
+        var plan = Validate("use tester", "open TestPage", "check Missing is shown");
+
+        Assert.That(plan.IsValid, Is.False);
+        Assert.That(plan.Issues[0].Message, Does.Contain("pages.py from-schema").And.Contain("analyse --include-hidden"));
+    }
+
     [Test]
     public void Warnings_are_retained_even_when_another_line_is_invalid()
     {

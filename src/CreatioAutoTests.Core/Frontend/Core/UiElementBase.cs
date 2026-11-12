@@ -10,7 +10,7 @@ namespace CreatioAutoTests.Frontend;
 /// generations disagree on, so <see cref="BuildSelector"/> is left to <see cref="FreedomElementBase"/>
 /// and <see cref="Classic.ClassicElementBase"/>; everything above it is identical.
 /// </summary>
-public abstract class UiElementBase : IUiElement, IExistable, ILabeled
+public abstract class UiElementBase : IUiElement, IExistable, ILabeled, IVisibilityAware
 {
     private ILocator? _root;
 
@@ -85,6 +85,28 @@ public abstract class UiElementBase : IUiElement, IExistable, ILabeled
         catch (PlaywrightException ex)
         {
             Logger.LogDebug(ex, "Element {Code} ({Where}) lookup failed.", Code, LocatorDescription);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Playwright's Visible is "present with a box, not display:none or visibility:hidden"; Hidden is its
+    /// complement and also covers a detached node, which is how Freedom UI drops a control a rule hides.
+    /// </summary>
+    public virtual async Task<bool> IsShownAsync(bool expected, int timeoutMs, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await Root.WaitForAsync(new LocatorWaitForOptions
+            {
+                State = expected ? WaitForSelectorState.Visible : WaitForSelectorState.Hidden,
+                Timeout = timeoutMs
+            }).WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            return true;
+        }
+        catch (TimeoutException)
+        {
             return false;
         }
     }

@@ -111,6 +111,10 @@ All notable changes to this project are recorded here. The format follows
 
 ### Fixed
 
+- `check <code> is not shown` no longer counts as the `is shown` line the validator wants before a
+  `set` / `check-value` on a rule-toggled control; `is shown` confirms it, `is not shown` withdraws it.
+  `IsShownAsync` honours its cancellation token. The `order-page-writes` example has its page file
+  (`Configuration/pages/UsrOrderForm.json`), so every `.act.exp` example validates.
 - `clear` refuses a read-only field up front, as `set` does, instead of waiting out the element
   timeout on an input that will never take the keystroke.
 - Grid editability is read from the footer row Creatio adds for appending a record, not from the

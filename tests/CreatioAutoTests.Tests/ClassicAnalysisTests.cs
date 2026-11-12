@@ -319,6 +319,25 @@ public sealed class ClassicPageFileWritingTests
         Assert.That(json, Does.Contain("\"type\": \"FreedomUI\""));
         Assert.That(json, Does.Not.Contain("schema"));
     }
+
+    [Test]
+    public void A_second_analysis_keeps_the_conditional_flag_of_an_element()
+    {
+        var analysis = new PageAnalysis
+        {
+            PageName = "ContactForm",
+            Url = "/0/Shell/#Card/Contacts_FormPage",
+            Elements = new[] { new DiscoveredElement("JobTitle", "Job title", "Text", "crt-input", false, false, true, null, null, null, null, false) },
+            UnknownControls = Array.Empty<UnknownControl>(),
+        };
+        var writer = new PageConfigWriter(NullLogger<PageConfigWriter>.Instance);
+        var path = writer.Write(analysis, _directory).FilePath;
+        File.WriteAllText(path, File.ReadAllText(path).Replace("\"code\": \"JobTitle\"", "\"code\": \"JobTitle\", \"conditional\": true"));
+
+        writer.Write(analysis, _directory);
+
+        Assert.That(File.ReadAllText(path), Does.Contain("\"conditional\": true"));
+    }
 }
 
 [TestFixture]

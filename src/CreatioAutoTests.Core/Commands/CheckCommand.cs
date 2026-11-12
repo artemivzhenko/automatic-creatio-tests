@@ -11,6 +11,7 @@ namespace CreatioAutoTests.Commands;
 ///   check X is [not] required
 ///   check X is [not] readonly
 ///   check X is [not] editable
+///   check X is [not] shown  - waits up to the element timeout for a rule to show or hide X
 ///   check X columns         - the grid renders exactly the configured columns, in that order
 ///   check console no errors [except "regex"] - no browser console error (or uncaught page error) so far
 /// Presence deliberately does not assert required or readonly: those are separate, explicit lines.
@@ -18,7 +19,7 @@ namespace CreatioAutoTests.Commands;
 [Command("check",
     Validator = typeof(StateCheckValidator),
     SupportedTargets = new[] { typeof(IExistable) },
-    Usage = "check <code> [not] exists | check <code> is [not] required|readonly|editable | check <code> columns | check console no errors [except \"<regex>\"]")]
+    Usage = "check <code> [not] exists | check <code> is [not] required|readonly|editable|shown | check <code> columns | check console no errors [except \"<regex>\"]")]
 public sealed class CheckCommand : ICommand
 {
     /// <summary>Asserts validated presence, absence, required, or readonly state on the target.</summary>
@@ -150,6 +151,21 @@ public sealed class CheckCommand : ICommand
         bool expected,
         CancellationToken cancellationToken)
     {
+        if (property == "shown")
+        {
+            // The wait is the assertion: a rule's effect is polled up to the element timeout, never sampled.
+            if (!await context.Target<IVisibilityAware>()
+                    .IsShownAsync(expected, context.Session.Settings.ElementTimeoutMs, cancellationToken).ConfigureAwait(false))
+            {
+                throw new CommandFailedException(
+                    "'" + element.Code + "' was expected to be " + (expected ? string.Empty : "not ") + "shown, but " +
+                    (expected ? "it is absent or hidden" : "it is still on the page") + " after " +
+                    context.Session.Settings.ElementTimeoutMs + " ms.");
+            }
+
+            return;
+        }
+
         var actual = property switch
         {
             "required" => await context.Target<IStateAware>()

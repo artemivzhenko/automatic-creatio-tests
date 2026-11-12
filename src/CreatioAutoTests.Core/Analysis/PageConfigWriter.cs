@@ -67,8 +67,11 @@ public sealed class PageConfigWriter
         // An entry a person pinned survives untouched: analysis cannot know what it knows.
         var pinned = existing.Where(e => e.Pinned).ToDictionary(e => e.Code, StringComparer.Ordinal);
 
+        // "conditional" is a person's (or from-schema's) fact about the rules, not something the DOM shows.
+        var conditional = existing.Where(e => e.Conditional).Select(e => e.Code).ToHashSet(StringComparer.Ordinal);
+
         var elements = analysis.Elements
-            .Select(e => pinned.TryGetValue(e.Code, out var kept) ? kept : ToDefinition(e))
+            .Select(e => pinned.TryGetValue(e.Code, out var kept) ? kept : ToDefinition(e, conditional.Contains(e.Code)))
             .ToList();
 
         if (keepMissing)
@@ -102,13 +105,14 @@ public sealed class PageConfigWriter
             pinned.Values.Where(p => found.Contains(p.Code)).ToArray());
     }
 
-    private static ElementDefinition ToDefinition(DiscoveredElement element)
+    private static ElementDefinition ToDefinition(DiscoveredElement element, bool conditional)
     {
         var definition = new ElementDefinition
         {
             Code = element.Code,
             Label = element.Label,
             Type = element.Type,
+            Conditional = conditional,
         };
 
         // Type-specific findings travel as extra members, bound to the element's options class when

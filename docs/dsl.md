@@ -12,7 +12,7 @@ Copy the `.act.exp` examples under `Cases/` and `ProcessCases/` to `.act` files 
 | --- | --- | --- | --- |
 | use | `use <user>` | none | `use testUser` |
 | open | `open <page> [for <recordId>]` | none | `open ContactForm for c4ed336c-3e9b-40fe-8b82-5632476472b4` |
-| check | `check <code> [not] exists` \| `check <code> is [not] required\|readonly\|editable` \| `check <code> columns` \| `check console no errors [except "<regex>"]` | `IExistable`; `required`/`readonly` need `IStateAware`, `editable` needs `IEditableAware`, `columns` needs `IColumned`; `console` none | `check Input_Text is required` |
+| check | `check <code> [not] exists` \| `check <code> is [not] required\|readonly\|editable\|shown` \| `check <code> columns` \| `check console no errors [except "<regex>"]` | `IExistable`; `required`/`readonly` need `IStateAware`, `editable` needs `IEditableAware`, `shown` needs `IVisibilityAware`, `columns` needs `IColumned`; `console` none | `check Input_Text is required` |
 | check-value | `check-value <code> eq|ne|gt|ge|lt|le|contains|startswith|endswith <value>` | `IValueElement` | `check-value Input_Text eq "Sample Name 123"` |
 | set | `set <code> "value" | set <code> <sourceCodeOrStaticValue>` | `IValueElement` | `set Input_Text DefInput` |
 | click | `click <code>` | `IClickable` | `click SaveButton` |
@@ -41,6 +41,17 @@ Copy the `.act.exp` examples under `Cases/` and `ProcessCases/` to `.act` files 
 | on | `on <page>` | none (a configured page) | `on ProductClassic` |
 
 `check <code> exists` also verifies that the rendered caption matches the `label` in the page file under `Configuration/pages`; required and readonly are never asserted implicitly, they are separate lines.
+
+`check <code> is shown` / `is not shown` waits up to the element timeout for a business rule's effect: the
+control present and laid out, or absent / `display:none`. A control a rule hides is absent from the Freedom UI
+DOM, so no analysis of one record sees it; its entry in the page file carries `"conditional": true` (written by
+`pages.py from-schema`, or by hand; `analyse` keeps it). The validator warns on `exists` / `not exists` for such
+an entry, and on `set` / `check-value` before an `is shown` line for it on the same page. The code must be in the
+page file: an unknown code is a validation error naming `pages.py from-schema <package> <page>` and
+`analyse --include-hidden`, never a runtime lookup (a case is validated completely before a browser opens).
+Both generations answer from the control's root element with Playwright's visibility rule: a control a Freedom
+rule drops is "not shown" (measured). A Classic control hidden with `display:none` would read "not shown", one
+moved off-screen (`x-hide-offsets`) would still read "shown"; neither was measured on a Classic bed yet.
 
 `check <code> columns` compares the columns the element renders -- names and left-to-right order --
 with the `columns` listed for it in its page file. The expectation lives in configuration rather than

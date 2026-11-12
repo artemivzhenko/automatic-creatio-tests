@@ -78,7 +78,8 @@ public sealed class ValidationContext
         {
             var codes = Catalog.CodesOnPage(CurrentPage);
             error = "element '" + code + "' is not configured on page '" + CurrentPage + "'. Known there: " +
-                    (codes.Count == 0 ? "(none)" : string.Join(", ", codes));
+                    (codes.Count == 0 ? "(none)" : string.Join(", ", codes)) +
+                    ". To add a control the page file lacks: 'pages.py from-schema <package> <page>' or 'analyse --include-hidden'";
             return false;
         }
 

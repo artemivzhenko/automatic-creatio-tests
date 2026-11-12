@@ -21,6 +21,20 @@ public interface IExistable : IUiElement
     Task<bool> ExistsAsync(int timeoutMs, CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// The element can wait for itself to be shown or not shown. A business rule toggles a control, and in
+/// Freedom UI a hidden control is absent from the DOM, so the answer is awaited, never sampled.
+/// Used by <c>check X is [not] shown</c>.
+/// </summary>
+public interface IVisibilityAware : IUiElement
+{
+    /// <summary>Waits up to <paramref name="timeoutMs"/> for the shown state to equal <paramref name="expected"/>; false on timeout.</summary>
+    /// <param name="expected">True to wait for the element to be present and laid out; false for absent or not displayed.</param>
+    /// <param name="timeoutMs">Wait budget in milliseconds.</param>
+    /// <param name="cancellationToken">Cancels the wait.</param>
+    Task<bool> IsShownAsync(bool expected, int timeoutMs, CancellationToken cancellationToken = default);
+}
+
 /// <summary>The element renders a caption that can be compared with the configured label.</summary>
 public interface ILabeled : IUiElement
 {

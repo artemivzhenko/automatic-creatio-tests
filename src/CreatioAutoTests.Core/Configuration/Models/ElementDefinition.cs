@@ -38,6 +38,13 @@ public sealed class ElementDefinition
     /// </summary>
     public bool Pinned { get; set; }
 
+    /// <summary>
+    /// A business rule of the page shows or hides this control at runtime, so it may be absent from the DOM.
+    /// Written by <c>pages.py from-schema</c> or by hand; the validator then steers the author to
+    /// <c>check X is [not] shown</c> instead of <c>exists</c>.
+    /// </summary>
+    public bool Conditional { get; set; }
+
     /// <summary>Type-specific JSON members, validated and bound through the element registration's options class.</summary>
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? Extra { get; set; }

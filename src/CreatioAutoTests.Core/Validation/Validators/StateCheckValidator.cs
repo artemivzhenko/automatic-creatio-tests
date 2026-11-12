@@ -10,6 +10,7 @@ namespace CreatioAutoTests.Validation.Validators;
 ///   check X is required       check X is not required
 ///   check X is readonly       check X is not readonly
 ///   check X is editable       check X is not editable
+///   check X is shown          check X is not shown   (waits for a rule to show or hide the control)
 ///   check X columns
 /// State assertions additionally require the element to expose that state at all, and a column
 /// assertion additionally requires the element to declare the columns it is being checked against.
@@ -23,7 +24,7 @@ public sealed class StateCheckValidator : ICommandValidator
         {
             return ValidationResult.Fail(
                 "'check' takes a code and what to assert: 'check <code> [not] exists', " +
-                "'check <code> is [not] required|readonly|editable' or 'check <code> columns'.");
+                "'check <code> is [not] required|readonly|editable|shown' or 'check <code> columns'.");
         }
 
         if (ConsoleForm(command, out var except) is { } consoleForm)
@@ -62,7 +63,7 @@ public sealed class StateCheckValidator : ICommandValidator
             ["is", "not", var property] => RequireState(property, target, code),
             _ => ValidationResult.Fail(
                 "'check " + code + " " + string.Join(' ', rest) +
-                "' is not a known form. Use '[not] exists', 'is [not] required|readonly|editable' " +
+                "' is not a known form. Use '[not] exists', 'is [not] required|readonly|editable|shown' " +
                 "or 'columns'.")
         };
     }
@@ -138,13 +139,14 @@ public sealed class StateCheckValidator : ICommandValidator
         {
             "required" or "readonly" => (typeof(IStateAware), "required/readonly state"),
             "editable" => (typeof(IEditableAware), "an editable state"),
+            "shown" => (typeof(IVisibilityAware), "a shown state"),
             _ => (null, string.Empty),
         };
 
         if (capability is null)
         {
             return ValidationResult.Fail(
-                "'check " + code + " is ...' supports 'required', 'readonly' and 'editable', not '" +
+                "'check " + code + " is ...' supports 'required', 'readonly', 'editable' and 'shown', not '" +
                 property + "'.");
         }
 
